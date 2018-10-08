@@ -2,6 +2,7 @@
 using Grains.Library.Helpers;
 using Grains.Library.Models;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,9 +10,10 @@ namespace Grains.Library.Extensions
 {
     public static class MatrixExtensions
     {
-        public static void AddRandomGrains(this Matrix matrix, int amount)
+        public static List<Cell> AddRandomGrains(this Matrix matrix, int amount)
         {
-            Random rnd = new Random();            
+            var randomCells = new List<Cell>();
+            var rnd = new Random();            
 
             for (int i=0; i<amount; i++)
             {
@@ -24,8 +26,12 @@ namespace Grains.Library.Extensions
                     continue;
                 }
 
-                matrix.Add(new Cell(rnd.Next(matrix.Width), rnd.Next(matrix.Height), i));
+                var cell = new Cell(rnd.Next(matrix.Width), rnd.Next(matrix.Height), i + 1);
+                matrix.Add(cell);
+                randomCells.Add(cell);
             }
+
+            return randomCells;
         }
 
         public static void AddStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy)
@@ -44,8 +50,17 @@ namespace Grains.Library.Extensions
                             matrix.AddVonNeumannNeighbourhood(referenceMatrix.Cells, cell);
                             break;
                         }
+                }                
+            }
+
+            matrix.NotEmptyCells = new List<Cell>();
+
+            for (int i = 0; i < matrix.Width; i++)
+            {
+                for (int j = 0; j < matrix.Height; j++)
+                {                   
+                   if(matrix.Cells[i,j] !=0) matrix.NotEmptyCells.Add(new Cell(i, j,matrix.Cells[i,j]));
                 }
-                    
             }
         }
     }

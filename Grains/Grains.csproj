@@ -94,5 +94,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Grains.Library\Grains.Library.csproj">
+      <Project>{24a5f240-a372-43b2-a520-c05f576eba6d}</Project>
+      <Name>Grains.Library</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
