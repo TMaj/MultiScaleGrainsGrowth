@@ -10,7 +10,7 @@ namespace Grains.Library.Models
         public int Width { get; set; }
         public int Height { get; set; }
         public int[,] Cells { get; set; }
-        public List<Cell> NotEmptyCells { get; set; }
+        public bool[,] NotEmptyCells { get; set; }
         public BorderStyle Border { get; set; }
 
         public Matrix(int size) : this(size, size)
@@ -23,13 +23,13 @@ namespace Grains.Library.Models
             this.Width = width;
             this.Height = heigth;
 
-            this.NotEmptyCells = new List<Cell>();
+            this.NotEmptyCells = new bool[width, heigth];
         }
 
         public void Add(Cell cell)
         {
             this.Cells[cell.X, cell.Y] = cell.Id;
-            this.NotEmptyCells.Add(cell);
+            this.NotEmptyCells[cell.X, cell.Y] = true;
         }
     }
 

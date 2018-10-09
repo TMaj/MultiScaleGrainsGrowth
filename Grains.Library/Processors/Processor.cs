@@ -32,11 +32,10 @@ namespace Grains.Library.Processors
             this.UpdatedCells = new List<Cell>();
         }
                
-        public void AddRandomGrains(int amount)
+        public async Task AddRandomGrains(int amount)
         {
-            this.matrix1.AddRandomGrains(amount);
-            this.UpdatedCells = this.matrix1.NotEmptyCells;
-            CloneMatrix(this.matrix1, this.matrix2);
+            await Task.Run(() => this.matrix1.AddRandomGrains(amount));
+            await CloneMatrix(this.matrix1, this.matrix2);
         }
 
         public void SetNeighbourhood(Neighbourhood neighbourhood)
@@ -50,11 +49,12 @@ namespace Grains.Library.Processors
             this.matrix2.Border = borderStyle;
         }
 
-        public void Clear()
+        public async Task Clear()
         {
-            this.matrix1 = new Matrix(this.width, this.height);
-            this.matrix2 = new Matrix(this.width, this.height);
-            this.UpdatedCells = new List<Cell>();
+            await Task.Run(() => {
+                this.matrix1 = new Matrix(this.width, this.height);
+                this.matrix2 = new Matrix(this.width, this.height);
+            });
         }
 
         public void StartGrowth()
@@ -64,19 +64,19 @@ namespace Grains.Library.Processors
 
         public async void MakeStep()
         {
-            await Task.Run(() => this.matrix2.AddStep(this.matrix1, this.neighbourhood));
+            this.matrix2.AddStep(this.matrix1, this.neighbourhood);
             await CloneMatrix(this.matrix2, this.matrix1);
-            this.UpdatedCells = this.matrix1.NotEmptyCells;
         }
 
         private async Task CloneMatrix(Matrix source, Matrix target)
         {
-            target.NotEmptyCells = source.NotEmptyCells;
-            Parallel.For(0, source.Width, i => {
-                for(int j=0; j< source.Height; j++)
-                {
-                    target.Cells[i, j] = source.Cells[i,j];
-                }
+            await Task.Run(() => {
+                target.NotEmptyCells = source.NotEmptyCells;
+                Parallel.For(0, source.Width, i => {
+                    Parallel.For(0, source.Height, j => {
+                        target.Cells[i, j] = source.Cells[i, j];
+                    });
+                });
             });
         }
     }

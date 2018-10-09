@@ -1,10 +1,11 @@
 ﻿using Grains.Library.Enums;
-using Grains.Library.Helpers;
 using Grains.Library.Models;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using Grains.Library.Actions;
 
 namespace Grains.Library.Extensions
 {
@@ -13,14 +14,14 @@ namespace Grains.Library.Extensions
         public static List<Cell> AddRandomGrains(this Matrix matrix, int amount)
         {
             var randomCells = new List<Cell>();
-            var rnd = new Random();            
+            var rnd = new Random();
 
-            for (int i=0; i<amount; i++)
+            for (int i = 0; i < amount; i++)
             {
                 int x = rnd.Next(matrix.Width);
                 int y = rnd.Next(matrix.Height);
 
-                if (matrix.Cells[x,y] != 0)
+                if (matrix.Cells[x, y] != 0)
                 {
                     i--;
                     continue;
@@ -36,32 +37,30 @@ namespace Grains.Library.Extensions
 
         public static void AddStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy)
         {
-            foreach (var cell in matrix.NotEmptyCells)
+            NeighbourhoodCalculation neighbourAction = NeighbourhoodActions.MooreAction;
+
+            switch (strategy)
             {
-                switch (strategy)
-                {
-                    case Neighbourhood.Moore:
-                        {
-                            matrix.AddMooreNeighbourhood(referenceMatrix.Cells, cell);
-                            break;
-                        }
-                    case Neighbourhood.VonNeumann:
-                        {
-                            matrix.AddVonNeumannNeighbourhood(referenceMatrix.Cells, cell);
-                            break;
-                        }
-                }                
+                case Neighbourhood.Moore:
+                    {
+                        neighbourAction = NeighbourhoodActions.MooreAction;
+                        break;
+                    }
+                case Neighbourhood.VonNeumann:
+                    {
+                        neighbourAction = NeighbourhoodActions.VonNeumannAction;
+                        break;
+                    }
             }
 
-            matrix.NotEmptyCells = new List<Cell>();
-
-            for (int i = 0; i < matrix.Width; i++)
-            {
-                for (int j = 0; j < matrix.Height; j++)
-                {                   
-                   if(matrix.Cells[i,j] !=0) matrix.NotEmptyCells.Add(new Cell(i, j,matrix.Cells[i,j]));
-                }
-            }
+            Parallel.For(0, matrix.Width, (i) => {
+                Parallel.For(0, matrix.Height, (j) => {
+                    if (!matrix.NotEmptyCells[i, j])
+                    {
+                        neighbourAction(matrix, referenceMatrix.Cells, new Cell(i, j));                       
+                    }
+                });
+            });
         }
     }
 }
