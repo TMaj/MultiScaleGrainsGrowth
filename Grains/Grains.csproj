@@ -99,6 +99,10 @@
       <Project>{24a5f240-a372-43b2-a520-c05f576eba6d}</Project>
       <Name>Grains.Library</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Grains.Utilities\Grains.Utilities.csproj">
+      <Project>{e9d85fe2-5f5c-4008-96c9-4af269ee6a78}</Project>
+      <Name>Grains.Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

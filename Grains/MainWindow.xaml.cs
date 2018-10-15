@@ -1,7 +1,11 @@
 ﻿using Grains.Library.Enums;
 using Grains.Library.Processors;
+using Grains.Library.Extensions;
+using Grains.Utilities.TextHandler;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Grains.Utilities.ImageHandler;
 
 namespace Grains
 {
@@ -25,14 +30,21 @@ namespace Grains
         private Rectangle[,] array;
         private Processor processor;
         private Color[] colorsArray;
+        private bool[,] renderingArray;
+        private int xDimension;
+        private int yDimension;
 
         public MainWindow()
         {
-            this.array = new Rectangle[300, 300];
-            this.processor = new Processor(300, 300);
+            this.xDimension = 300;
+            this.yDimension = 300;
+
+            this.array = new Rectangle[xDimension, yDimension];
+            this.processor = new Processor(xDimension, yDimension);
             this.colorsArray = new Color[10];
+            this.renderingArray = new bool[xDimension, yDimension];
             InitializeComponent();
-            InitializeRectanglesOnCanvas(300, 300);
+            InitializeRectanglesOnCanvas(xDimension, yDimension);
         }
 
         private void InitializeRectanglesOnCanvas(int width, int height)
@@ -70,7 +82,7 @@ namespace Grains
         {
             this.colorsArray = new Color[value+1];
             var rand = new Random();
-            this.colorsArray[0] = Colors.Aqua;
+            this.colorsArray[0] = Colors.White;
 
             for (int i = 1; i < value + 1; i++)
             {
@@ -85,11 +97,26 @@ namespace Grains
 
         private void RefreshFullArray()
         {
-            for (int i = 0; i < 300; i++)
+            for (int i = 0; i < xDimension; i++)
             {
-                for (int j = 0; j < 300; j++)
+                for (int j = 0; j < yDimension; j++)
                 {
-                    this.array[i, j].Fill = new SolidColorBrush(colorsArray[this.processor.Array[i, j]]);
+                    if (this.processor.Array[i, j] !=0 && !this.renderingArray[i, j])
+                    {
+                        this.array[i, j].Fill = new SolidColorBrush(colorsArray[this.processor.Array[i, j]]);
+                        this.renderingArray[i, j] = true;
+                    }                    
+                }
+            }
+        }
+        
+        private void ClearArray()
+        {
+            for (int i = 0; i < xDimension; i++)
+            {
+                for (int j = 0; j < yDimension; j++)
+                {
+                    this.array[i, j].Fill = new SolidColorBrush(colorsArray[0]);
                 }
             }
         }
@@ -102,25 +129,25 @@ namespace Grains
             }
         }
 
-        private void stepButton_Click(object sender, RoutedEventArgs e)
+        private async void stepButton_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
+            await Task.Run(() =>
             {
                 this.processor.MakeStep();
 
             }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() => {
-                RefreshArray();
+                RefreshFullArray();
             })));
           
         }
 
-        private void randomButton_Click(object sender, RoutedEventArgs e)
+        private async void randomButton_Click(object sender, RoutedEventArgs e)
         {
             InitializeColorsArray(Convert.ToInt32(this.randomTextBox.Text));
+            
+            await this.processor.AddRandomGrains(Convert.ToInt32(this.randomTextBox.Text));
 
-            this.processor.AddRandomGrains(Convert.ToInt32(this.randomTextBox.Text));
-
-            RefreshArray();
+            RefreshFullArray();
         }
 
         private void radioButton2_Checked(object sender, RoutedEventArgs e)
@@ -133,16 +160,110 @@ namespace Grains
             this.processor.SetNeighbourhood(Neighbourhood.VonNeumann);
         }
 
-        private void clearButton_Click(object sender, RoutedEventArgs e)
+        private async void clearButton_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                this.processor.Clear();
+            await this.processor.Clear();
+
+            await Task.Run(() =>
+            {                
+                this.renderingArray = new bool[xDimension, yDimension];
 
             }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() => {
-                this.RefreshFullArray();
+                this.ClearArray();
             })));
             
+        }
+
+        private async void importButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            string path = string.Empty;
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                path = openFileDialog.FileName;
+                if (File.Exists(path))
+                {
+                    TextHandler.ImportFromTextFile(this.processor.Array, this.xDimension, this.yDimension, path);
+                }
+            }
+
+            await Task.Run(() =>
+            {
+                this.renderingArray = new bool[xDimension, yDimension];
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    this.ClearArray();
+                    InitializeColorsArray(this.processor.Array.Max()); 
+                    RefreshFullArray();
+                }));
+            });
+        }
+
+        private void exportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            string path = string.Empty;
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                path = saveFileDialog.FileName;
+
+                if (!File.Exists(path))
+                {
+                    File.Create(path).Close();
+                }
+
+                TextHandler.ExportToTextFile(this.processor.Array, this.xDimension, this.yDimension, path);
+            }            
+        }
+
+        private void exportImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Png files (*.png)|*.png|All files (*.*)|*.*";
+            string path = string.Empty;
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                path = saveFileDialog.FileName;
+
+                if (!File.Exists(path))
+                {
+                    File.Create(path).Close();
+                }
+
+                ImageHandler.ExportToImage(this.canvas, path);
+            }
+        }
+
+        private async void importImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Png files (*.png)|*.png|All files (*.*)|*.*";
+            string path = string.Empty;
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                path = openFileDialog.FileName;
+                if (File.Exists(path))
+                {
+                    ImageHandler.ImportFromImage(this.processor.Array, this.xDimension, this.yDimension, path);
+                }
+            }
+
+            await Task.Run(() =>
+            {
+                this.renderingArray = new bool[xDimension, yDimension];
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    this.ClearArray();
+                    InitializeColorsArray(this.processor.Array.Max());
+                    RefreshFullArray();
+                }));
+            });
         }
     }
 }

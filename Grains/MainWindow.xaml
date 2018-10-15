@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Grains"
         mc:Ignorable="d"
-        Title="MainWindow" Height="689.465" Width="797.527">
+        Title="MainWindow" Height="746.465" Width="797.527" Background="#FFF79D9D">
     <Grid Margin="0,0,-2,-3" RenderTransformOrigin="0.5,0.5">
         <Grid.RenderTransform>
             <TransformGroup>
@@ -15,16 +15,20 @@
             </TransformGroup>
         </Grid.RenderTransform>
         <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="600" Margin="10,10,0,0" VerticalAlignment="Top" Width="600
-                " Background="#FFE1FFFE"/>
-        <RadioButton x:Name="radioButton1" Content="Von Neumann" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="615,10,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton x:Name="radioButton2" Content="Moore" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="615,30,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked" Unchecked="radioButton2_Unchecked"/>
+                " Background="#FFFFFFFF"/>
+        <RadioButton x:Name="radioButton1" Content="Von Neumann" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="615,10,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radioButton2" Content="Moore" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="615,30,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked" Unchecked="radioButton2_Unchecked" IsChecked="True"/>
         <TextBox x:Name="randomTextBox" HorizontalAlignment="Left" Height="23" Margin="615,64,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="54"/>
         <Button x:Name="randomButton" Content="Random" HorizontalAlignment="Left" Margin="684,63,0,0" VerticalAlignment="Top" Width="75" Click="randomButton_Click"/>
         <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Left" Margin="615,102,0,0" VerticalAlignment="Top" Width="144" RenderTransformOrigin="-0.336,0.54" Click="clearButton_Click"/>
         <Button x:Name="stepButton" Content="Step" HorizontalAlignment="Left" Margin="615,154,0,0" VerticalAlignment="Top" Width="144" Height="22" Click="stepButton_Click"/>
         <RadioButton x:Name="radioButton3" GroupName="Borders" Content="Fixed" HorizontalAlignment="Left" Margin="615,245,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Transient" HorizontalAlignment="Left" Margin="615,260,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Transient" HorizontalAlignment="Left" Margin="615,260,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <Label Content="Borders" HorizontalAlignment="Left" Margin="615,219,0,0" VerticalAlignment="Top" Width="66"/>
+        <Button x:Name="importButton" Content="Import from text file" HorizontalAlignment="Left" Margin="635,519,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importButton_Click"/>
+        <Button x:Name="exportButton" Content="Export to text file" HorizontalAlignment="Left" Margin="635,560,0,0" VerticalAlignment="Top" Width="131" Height="33" Click="exportButton_Click"/>
+        <Button x:Name="importImageButton" Content="Import from image" HorizontalAlignment="Left" Margin="635,619,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importImageButton_Click"/>
+        <Button x:Name="exportImageButton" Content="Export to image" HorizontalAlignment="Left" Margin="635,660,0,0" VerticalAlignment="Top" Width="131" Height="33" Click="exportImageButton_Click"/>
 
     </Grid>
 </Window>
