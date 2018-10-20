@@ -31,8 +31,9 @@ namespace Grains.Library.Extensions.Helpers
             foreach (var point in Coordinates.Coordinates.MooreCoordinates)
             {
                 var tempCell = currentCell.Get(point.X, point.Y).NormalizeCell(matrix);
+                tempCell.Id = matrix.Cells[tempCell.X, tempCell.Y];
 
-                if (tempCell.Id != currentCell.Id && tempCell.Id != 0)
+                if (tempCell.Id != currentCell.Id && tempCell.Id != 1)
                 {
                     return true;
                 }

@@ -40,7 +40,9 @@ namespace Grains.Library.Extensions
         public static void AddInclusions(this Matrix matrix, int amount, int size, Inclusions type)
         {
             var borderCellsHelper = new BorderCellsHelpers();
+            var inclusionsHelper = new InclusionsHelper();
             var borderCells = borderCellsHelper.GetBorderCells(matrix);
+            inclusionsHelper.AddInclusions(matrix, amount, size, type, borderCells);
         }
 
         public static void AddStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy)

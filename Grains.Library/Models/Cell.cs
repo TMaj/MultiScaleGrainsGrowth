@@ -23,7 +23,7 @@ namespace Grains.Library.Models
 
         public Cell Get(int xDiff, int yDiff)
         {
-            return new Cell(this.X + xDiff, this.Y + yDiff, this.Id);
+            return new Cell(this.X + xDiff, this.Y + yDiff);//, this.Id);
         }
     }
 }

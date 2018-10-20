@@ -39,6 +39,7 @@ namespace Grains
             InitializeComponent();
             InitializeRectanglesOnCanvas(xDimension, yDimension);
             InitializeComboBoxes();
+            InitializeColorsArray(0);
         }
 
         private void InitializeRectanglesOnCanvas(int width, int height)
@@ -239,7 +240,21 @@ namespace Grains
 
         private async void inclusionsButton_Click(object sender, RoutedEventArgs e)
         {
+            await processor.AddInclusions(Convert.ToInt32(incusionsNumberField.Text), Convert.ToInt32(inclusionsSizeField.Text),
+                (Inclusions)inclusionsComboBox.SelectedItem);
 
+            await Task.Run(() =>
+            {
+                renderingArray = new bool[xDimension, yDimension];
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        renderingArray = new bool[xDimension, yDimension];
+                        RefreshFullArray();
+                    }));
+                }));
+            });       
         }
     }
 }
