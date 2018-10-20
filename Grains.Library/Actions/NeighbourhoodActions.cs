@@ -14,30 +14,14 @@ namespace Grains.Library.Actions
     {
         public static NeighbourhoodCalculation MooreAction => (Matrix originalMatrix, int[,] referenceArray, Cell currentCell) => {
 
-           var coordinates = new Point[]
-           {
-                new Point(-1, -1),
-                new Point(0, -1),
-                new Point(1, -1),
-                new Point(-1, 0),
-                new Point(1, 0),
-                new Point(-1, 1),
-                new Point(0, 1),
-                new Point(1, 1),
-           };
+            var coordinates = Coordinates.Coordinates.MooreCoordinates;
 
             NeighbourhoodCalculation(originalMatrix, referenceArray, currentCell, coordinates);
         };
 
         public static NeighbourhoodCalculation VonNeumannAction => (Matrix originalMatrix, int[,] referenceArray, Cell currentCell) => {
 
-            var coordinates = new Point[]
-            {
-                new Point(0, -1),
-                new Point(-1, 0),
-                new Point(1, 0),
-                new Point(0, 1)
-            };
+            var coordinates = Coordinates.Coordinates.VonNeumannCoordinates;
 
             NeighbourhoodCalculation(originalMatrix, referenceArray, currentCell, coordinates);
         };
@@ -50,7 +34,7 @@ namespace Grains.Library.Actions
             {
                 var tempCell = currentCell.Get(point.X, point.Y).NormalizeCell(originalMatrix);
 
-                if (referenceArray[tempCell.X, tempCell.Y] != 0)
+                if (referenceArray[tempCell.X, tempCell.Y] != 0 && referenceArray[tempCell.X, tempCell.Y] != 1)
                 {
                     neighbourhoodPoints.Add(referenceArray[tempCell.X, tempCell.Y]);
                 }

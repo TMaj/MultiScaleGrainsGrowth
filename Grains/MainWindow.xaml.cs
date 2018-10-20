@@ -1,24 +1,17 @@
 ﻿using Grains.Library.Enums;
-using Grains.Library.Processors;
 using Grains.Library.Extensions;
+using Grains.Library.Processors;
+using Grains.Utilities.ImageHandler;
+using Grains.Utilities.IOHandlers;
 using Grains.Utilities.TextHandler;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Grains.Utilities.ImageHandler;
 
 namespace Grains
 {
@@ -36,25 +29,26 @@ namespace Grains
 
         public MainWindow()
         {
-            this.xDimension = 300;
-            this.yDimension = 300;
+            xDimension = 300;
+            yDimension = 300;
 
-            this.array = new Rectangle[xDimension, yDimension];
-            this.processor = new Processor(xDimension, yDimension);
-            this.colorsArray = new Color[10];
-            this.renderingArray = new bool[xDimension, yDimension];
+            array = new Rectangle[xDimension, yDimension];
+            processor = new Processor(xDimension, yDimension);
+            colorsArray = new Color[10];
+            renderingArray = new bool[xDimension, yDimension];
             InitializeComponent();
             InitializeRectanglesOnCanvas(xDimension, yDimension);
+            InitializeComboBoxes();
         }
 
         private void InitializeRectanglesOnCanvas(int width, int height)
         {
-            double rectangeWidth = this.canvas.Width / width;
-            double rectangeHeight = this.canvas.Height / height;
+            double rectangeWidth = canvas.Width / width;
+            double rectangeHeight = canvas.Height / height;
 
-            for (int i=0; i< width; i++)
+            for (int i = 0; i < width; i++)
             {
-                for (int j=0; j < height; j++)
+                for (int j = 0; j < height; j++)
                 {
                     var rect = new Rectangle();
                     rect.Width = rectangeWidth;
@@ -62,37 +56,50 @@ namespace Grains
 
                     rect.Fill = new SolidColorBrush(Colors.Azure);
 
-                    this.array[i, j] = rect;
+                    array[i, j] = rect;
 
-                    Canvas.SetLeft(rect, i*rectangeWidth);
-                    Canvas.SetTop(rect, j*rectangeHeight);
+                    Canvas.SetLeft(rect, i * rectangeWidth);
+                    Canvas.SetTop(rect, j * rectangeHeight);
 
                     if (!CheckAccess())
                     {
-                        Dispatcher.Invoke(() => this.canvas.Children.Add(rect));
+                        Dispatcher.Invoke(() => canvas.Children.Add(rect));
                         return;
                     }
 
-                    this.canvas.Children.Add(rect);
+                    canvas.Children.Add(rect);
                 }
             }
         }
 
         private void InitializeColorsArray(int value)
         {
-            this.colorsArray = new Color[value+1];
+            colorsArray = new Color[value + 2];
             var rand = new Random();
-            this.colorsArray[0] = Colors.White;
+            colorsArray[0] = Colors.White;
+            colorsArray[1] = Colors.Black;
 
-            for (int i = 1; i < value + 1; i++)
+            for (int i = 2; i < value + 2; i++)
             {
                 var color = new Color();
                 color.R = (byte)rand.Next(0, 255);
                 color.G = (byte)rand.Next(0, 255);
                 color.B = (byte)rand.Next(0, 255);
                 color.A = 255;
-                this.colorsArray[i] = color;
+                colorsArray[i] = color;
             }
+        }
+
+        private void InitializeComboBoxes()
+        {
+            var inclusions = new List<Inclusions>
+            {
+                Inclusions.Circular,
+                Inclusions.Square
+            };
+
+            inclusionsComboBox.ItemsSource = inclusions;
+            inclusionsComboBox.SelectedIndex = 0;
         }
 
         private void RefreshFullArray()
@@ -101,22 +108,22 @@ namespace Grains
             {
                 for (int j = 0; j < yDimension; j++)
                 {
-                    if (this.processor.Array[i, j] !=0 && !this.renderingArray[i, j])
+                    if (processor.Array[i, j] != 0 && !renderingArray[i, j])
                     {
-                        this.array[i, j].Fill = new SolidColorBrush(colorsArray[this.processor.Array[i, j]]);
-                        this.renderingArray[i, j] = true;
-                    }                    
+                        array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
+                        renderingArray[i, j] = true;
+                    }
                 }
             }
         }
-        
+
         private void ClearArray()
         {
             for (int i = 0; i < xDimension; i++)
             {
                 for (int j = 0; j < yDimension; j++)
                 {
-                    this.array[i, j].Fill = new SolidColorBrush(colorsArray[0]);
+                    array[i, j].Fill = new SolidColorBrush(colorsArray[0]);
                 }
             }
         }
@@ -125,7 +132,7 @@ namespace Grains
         {
             foreach (var cell in processor.UpdatedCells)
             {
-                this.array[cell.X, cell.Y].Fill = new SolidColorBrush(colorsArray[this.processor.Array[cell.X, cell.Y]]);
+                array[cell.X, cell.Y].Fill = new SolidColorBrush(colorsArray[processor.Array[cell.X, cell.Y]]);
             }
         }
 
@@ -133,69 +140,63 @@ namespace Grains
         {
             await Task.Run(() =>
             {
-                this.processor.MakeStep();
+                processor.MakeStep();
 
-            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() => {
+            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() =>
+            {
                 RefreshFullArray();
             })));
-          
+
         }
 
         private async void randomButton_Click(object sender, RoutedEventArgs e)
         {
-            InitializeColorsArray(Convert.ToInt32(this.randomTextBox.Text));
-            
-            await this.processor.AddRandomGrains(Convert.ToInt32(this.randomTextBox.Text));
+            InitializeColorsArray(Convert.ToInt32(randomTextBox.Text));
+
+            await processor.AddRandomGrains(Convert.ToInt32(randomTextBox.Text));
 
             RefreshFullArray();
         }
 
         private void radioButton2_Checked(object sender, RoutedEventArgs e)
         {
-            this.processor.SetNeighbourhood(Neighbourhood.Moore);
+            processor.SetNeighbourhood(Neighbourhood.Moore);
         }
 
         private void radioButton2_Unchecked(object sender, RoutedEventArgs e)
         {
-            this.processor.SetNeighbourhood(Neighbourhood.VonNeumann);
+            processor.SetNeighbourhood(Neighbourhood.VonNeumann);
         }
 
         private async void clearButton_Click(object sender, RoutedEventArgs e)
         {
-            await this.processor.Clear();
+            await processor.Clear();
 
             await Task.Run(() =>
-            {                
-                this.renderingArray = new bool[xDimension, yDimension];
+            {
+                renderingArray = new bool[xDimension, yDimension];
 
-            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() => {
-                this.ClearArray();
+            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() =>
+            {
+                ClearArray();
             })));
-            
+
         }
 
         private async void importButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            string path = string.Empty;
+            var openingHandler = new OpeningHandler("Text files (*.txt)|*.txt|All files (*.*)|*.*");
+            var path = openingHandler.GetPath();
 
-            if (openFileDialog.ShowDialog() == true)
-            {
-                path = openFileDialog.FileName;
-                if (File.Exists(path))
-                {
-                    TextHandler.ImportFromTextFile(this.processor.Array, this.xDimension, this.yDimension, path);
-                }
-            }
+            TextHandler.ImportFromTextFile(processor.Array, xDimension, yDimension, path);
 
             await Task.Run(() =>
             {
-                this.renderingArray = new bool[xDimension, yDimension];
+                renderingArray = new bool[xDimension, yDimension];
                 Dispatcher.BeginInvoke((Action)(() =>
                 {
-                    this.ClearArray();
-                    InitializeColorsArray(this.processor.Array.Max()); 
+                    ClearArray();
+                    InitializeColorsArray(processor.Array.Max());
                     RefreshFullArray();
                 }));
             });
@@ -203,67 +204,42 @@ namespace Grains
 
         private void exportButton_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            string path = string.Empty;
+            var savingHandler = new SavingHandler("Text files (*.txt)|*.txt|All files (*.*)|*.*");
+            var path = savingHandler.GetPath();
 
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                path = saveFileDialog.FileName;
-
-                if (!File.Exists(path))
-                {
-                    File.Create(path).Close();
-                }
-
-                TextHandler.ExportToTextFile(this.processor.Array, this.xDimension, this.yDimension, path);
-            }            
+            TextHandler.ExportToTextFile(processor.Array, xDimension, yDimension, path);
         }
 
         private void exportImageButton_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Png files (*.png)|*.png|All files (*.*)|*.*";
-            string path = string.Empty;
+            var savingHandler = new SavingHandler("Png files (*.png)|*.png|All files (*.*)|*.*");
+            var path = savingHandler.GetPath();
 
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                path = saveFileDialog.FileName;
-
-                if (!File.Exists(path))
-                {
-                    File.Create(path).Close();
-                }
-
-                ImageHandler.ExportToImage(this.canvas, path);
-            }
+            ImageHandler.ExportToImage(canvas, path);
         }
 
         private async void importImageButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Png files (*.png)|*.png|All files (*.*)|*.*";
-            string path = string.Empty;
+            var openingHandler = new OpeningHandler("Png files (*.png)|*.png|All files (*.*)|*.*");
+            var path = openingHandler.GetPath();
 
-            if (openFileDialog.ShowDialog() == true)
-            {
-                path = openFileDialog.FileName;
-                if (File.Exists(path))
-                {
-                    ImageHandler.ImportFromImage(this.processor.Array, this.xDimension, this.yDimension, path);
-                }
-            }
+            ImageHandler.ImportFromImage(processor.Array, xDimension, yDimension, 600, path);
 
             await Task.Run(() =>
             {
-                this.renderingArray = new bool[xDimension, yDimension];
+                renderingArray = new bool[xDimension, yDimension];
                 Dispatcher.BeginInvoke((Action)(() =>
                 {
-                    this.ClearArray();
-                    InitializeColorsArray(this.processor.Array.Max());
+                    ClearArray();
+                    InitializeColorsArray(processor.Array.Max());
                     RefreshFullArray();
                 }));
             });
+        }
+
+        private async void inclusionsButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

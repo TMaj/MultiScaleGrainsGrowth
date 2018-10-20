@@ -46,6 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ImageHandler\ImageHandler.cs" />
+    <Compile Include="IOHandlers\IOHandler.cs" />
+    <Compile Include="IOHandlers\OpeningHandler.cs" />
+    <Compile Include="IOHandlers\SavingHandler.cs" />
     <Compile Include="TextHandler\TextHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

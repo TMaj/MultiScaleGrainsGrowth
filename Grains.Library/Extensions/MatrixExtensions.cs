@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Grains.Library.Actions;
+using System.Collections.Concurrent;
+using Grains.Library.Extensions.Helpers;
 
 namespace Grains.Library.Extensions
 {
@@ -27,12 +29,18 @@ namespace Grains.Library.Extensions
                     continue;
                 }
 
-                var cell = new Cell(rnd.Next(matrix.Width), rnd.Next(matrix.Height), i + 1);
+                var cell = new Cell(rnd.Next(matrix.Width), rnd.Next(matrix.Height), i + 2);
                 matrix.Add(cell);
                 randomCells.Add(cell);
             }
 
             return randomCells;
+        }
+
+        public static void AddInclusions(this Matrix matrix, int amount, int size, Inclusions type)
+        {
+            var borderCellsHelper = new BorderCellsHelpers();
+            var borderCells = borderCellsHelper.GetBorderCells(matrix);
         }
 
         public static void AddStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy)
@@ -61,6 +69,6 @@ namespace Grains.Library.Extensions
                     }
                 });
             });
-        }
+        }        
     }
 }

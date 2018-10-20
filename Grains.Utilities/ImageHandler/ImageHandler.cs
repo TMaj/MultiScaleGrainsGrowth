@@ -16,15 +16,15 @@ namespace Grains.Utilities.ImageHandler
     {
         public static void ExportToImage(Canvas canvas, string path)
         {
-            var rtb = new RenderTargetBitmap((int)canvas.RenderSize.Width+15,
-           (int)canvas.RenderSize.Height+15, 96d, 96d, PixelFormats.Default);
+            var rtb = new RenderTargetBitmap((int)canvas.RenderSize.Width,
+           (int)canvas.RenderSize.Height, 96d, 96d, PixelFormats.Default);
 
             rtb.Render(canvas);
 
-            var crop = new CroppedBitmap(rtb, new Int32Rect(0, 0, 300, 300));
+            var crop = new CroppedBitmap(rtb, new Int32Rect(0, 0, 600, 600));
 
             BitmapEncoder pngEncoder = new PngBitmapEncoder();
-            pngEncoder.Frames.Add(BitmapFrame.Create(rtb));
+            pngEncoder.Frames.Add(BitmapFrame.Create(crop));
 
             using (var fs = File.OpenWrite(path))
             {
@@ -32,22 +32,24 @@ namespace Grains.Utilities.ImageHandler
             }
         }
 
-        public static void ImportFromImage(int[,] array, int xDimension, int yDimension, string path)
+        public static void ImportFromImage(int[,] array, int xDimension, int yDimension, int targetResolution, string path)
         {
-            var originBitmap = new Bitmap(path);
-            var bitmap = new Bitmap(originBitmap, xDimension, yDimension);
-
+            var originalBitmap = new Bitmap(path);
+            var bitmap = new Bitmap(originalBitmap, targetResolution, targetResolution);
+            
             int id = 0;
             var ids = new Dictionary<string, int>();
 
             int x = bitmap.Size.Width;
             int y = bitmap.Size.Height;
 
-            for (int i = 0; i < x; i++)
+            int ratio = targetResolution / xDimension;
+
+            for (int i = 0; i < xDimension; i++)
             {
-                for (int j = 0; j < y; j++)
+                for (int j = 0; j < yDimension; j++)
                 {
-                    var pixelColor = bitmap.GetPixel(i, j).ToString();
+                    var pixelColor = bitmap.GetPixel(i*ratio, j*ratio).ToString();
 
                     if (ids.ContainsKey(pixelColor))
                     {
@@ -55,7 +57,9 @@ namespace Grains.Utilities.ImageHandler
                     }
                     else
                     {
-                        ids.Add(pixelColor, id++);
+                        int newId = ++id;
+                        ids.Add(pixelColor, newId);
+                        array[i, j] = newId;
                     }
                 }
             }

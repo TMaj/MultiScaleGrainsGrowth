@@ -40,22 +40,22 @@ namespace Grains.Library.Extensions
                     {
                         if (cell.X >= matrix.Width)
                         {
-                            cell.X = 0;
+                            cell.X = Math.Abs(matrix.Width - cell.X);
                         }
 
                         if (cell.Y >= matrix.Height)
                         {
-                            cell.Y = 0;
+                            cell.Y = Math.Abs(matrix.Height - cell.Y);
                         }
 
                         if (cell.X < 0)
                         {
-                            cell.X = matrix.Width - 1;
+                            cell.X = matrix.Width + cell.X;
                         }
 
                         if (cell.Y < 0)
                         {
-                            cell.Y = matrix.Height -1;
+                            cell.Y = matrix.Height + cell.Y;
                         }
 
                         break;

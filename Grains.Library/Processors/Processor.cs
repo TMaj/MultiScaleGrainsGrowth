@@ -1,9 +1,7 @@
 ﻿using Grains.Library.Enums;
 using Grains.Library.Extensions;
 using Grains.Library.Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Grains.Library.Processors
@@ -24,18 +22,24 @@ namespace Grains.Library.Processors
 
         public Processor(int width, int height)
         {
-            this.matrix1 = new Matrix(width, height);
-            this.matrix2 = new Matrix(width, height);
+            matrix1 = new Matrix(width, height);
+            matrix2 = new Matrix(width, height);
 
             this.width = width;
             this.height = height;
-            this.UpdatedCells = new List<Cell>();
+            UpdatedCells = new List<Cell>();
         }
-               
+
         public async Task AddRandomGrains(int amount)
         {
-            await Task.Run(() => this.matrix1.AddRandomGrains(amount));
-            await CloneMatrix(this.matrix1, this.matrix2);
+            await Task.Run(() => matrix1.AddRandomGrains(amount));
+            await CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task AddInclusions(int amount, int size, Inclusions type)
+        {
+            await Task.Run(() => matrix1.AddInclusions(amount, size, type));
+            await CloneMatrix(matrix1, matrix2);
         }
 
         public void SetNeighbourhood(Neighbourhood neighbourhood)
@@ -45,15 +49,16 @@ namespace Grains.Library.Processors
 
         public void SetBorderStyle(BorderStyle borderStyle)
         {
-            this.matrix1.Border = borderStyle;
-            this.matrix2.Border = borderStyle;
+            matrix1.Border = borderStyle;
+            matrix2.Border = borderStyle;
         }
 
         public async Task Clear()
         {
-            await Task.Run(() => {
-                this.matrix1 = new Matrix(this.width, this.height);
-                this.matrix2 = new Matrix(this.width, this.height);
+            await Task.Run(() =>
+            {
+                matrix1 = new Matrix(width, height);
+                matrix2 = new Matrix(width, height);
             });
         }
 
@@ -64,16 +69,19 @@ namespace Grains.Library.Processors
 
         public async void MakeStep()
         {
-            this.matrix2.AddStep(this.matrix1, this.neighbourhood);
-            await CloneMatrix(this.matrix2, this.matrix1);
+            matrix2.AddStep(matrix1, neighbourhood);
+            await CloneMatrix(matrix2, matrix1);
         }
 
         private async Task CloneMatrix(Matrix source, Matrix target)
         {
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 target.NotEmptyCells = source.NotEmptyCells;
-                Parallel.For(0, source.Width, i => {
-                    Parallel.For(0, source.Height, j => {
+                Parallel.For(0, source.Width, i =>
+                {
+                    Parallel.For(0, source.Height, j =>
+                    {
                         target.Cells[i, j] = source.Cells[i, j];
                     });
                 });
