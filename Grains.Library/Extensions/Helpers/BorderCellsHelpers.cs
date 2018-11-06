@@ -28,6 +28,11 @@ namespace Grains.Library.Extensions.Helpers
 
         private bool CheckForDifference(Cell currentCell, Matrix matrix)
         {
+            if (currentCell.Id == 1)
+            {
+                return false;
+            }
+
             foreach (var point in Coordinates.Coordinates.MooreCoordinates)
             {
                 var tempCell = currentCell.Get(point.X, point.Y).NormalizeCell(matrix);

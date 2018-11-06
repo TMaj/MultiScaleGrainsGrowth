@@ -6,12 +6,15 @@ using Grains.Utilities.IOHandlers;
 using Grains.Utilities.TextHandler;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Grains
 {
@@ -27,6 +30,10 @@ namespace Grains
         private int xDimension;
         private int yDimension;
 
+        private readonly BackgroundWorker backgroundWorker;
+        private readonly BackgroundWorker clearingBackgroundWorker;
+        private readonly DispatcherTimer dispatcherTimer;
+
         public MainWindow()
         {
             xDimension = 300;
@@ -36,6 +43,18 @@ namespace Grains
             processor = new Processor(xDimension, yDimension);
             colorsArray = new Color[10];
             renderingArray = new bool[xDimension, yDimension];
+            backgroundWorker = new BackgroundWorker();
+            clearingBackgroundWorker = new BackgroundWorker();
+
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += dispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
+
+            backgroundWorker.DoWork += backgroundWorker_DoWork;
+            backgroundWorker.RunWorkerCompleted += worker_RunWorkerCompleted;
+
+            clearingBackgroundWorker.DoWork += clearingbackgroundWorker_DoWork;
+
             InitializeComponent();
             InitializeRectanglesOnCanvas(xDimension, yDimension);
             InitializeComboBoxes();
@@ -101,19 +120,49 @@ namespace Grains
 
             inclusionsComboBox.ItemsSource = inclusions;
             inclusionsComboBox.SelectedIndex = 0;
+
+            var substructures = new List<Substructures>
+            {
+               Substructures.Substructure,
+               Substructures.DualPhase
+            };
+
+            substructuresComboBox.ItemsSource = substructures;
+            substructuresComboBox.SelectedIndex = 0;
         }
 
         private void RefreshFullArray()
         {
+
+            //Parallel.For(0, xDimension, (i) => {
+            //    Parallel.For(0, yDimension, (j) => {
+            //        Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+            //        {
+            //            array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
+            //        }));
+            //    });
+            //});
+
             for (int i = 0; i < xDimension; i++)
             {
                 for (int j = 0; j < yDimension; j++)
                 {
-                    if (processor.Array[i, j] != 0 && !renderingArray[i, j])
+                    if (processor.Array[i, j] == 0)
                     {
-                        array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
-                        renderingArray[i, j] = true;
+                        continue;
                     }
+
+                    if (renderingArray[i, j] == true)
+                    {
+                        continue;
+                    }
+
+                    renderingArray[i, j] = true;
+                    // if (!renderingArray[i, j])
+                    // {
+                    array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
+                  //      renderingArray[i, j] = processor.Array[i, j] != 0;
+                  //  }
                 }
             }
         }
@@ -139,15 +188,10 @@ namespace Grains
 
         private async void stepButton_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
+            if (!backgroundWorker.IsBusy)
             {
-                processor.MakeStep();
-
-            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() =>
-            {
-                RefreshFullArray();
-            })));
-
+                backgroundWorker.RunWorkerAsync();
+            }
         }
 
         private async void randomButton_Click(object sender, RoutedEventArgs e)
@@ -159,35 +203,71 @@ namespace Grains
             RefreshFullArray();
         }
 
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            int x = 90;
+            xTextBox.Dispatcher.Invoke(DispatcherPriority.Normal,
+                (ThreadStart) delegate { x = Convert.ToInt32(this.xTextBox.Text); });
+            processor.MakeStep(x);
+        }
+
+        private async void clearingbackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            await processor.Clear();
+            renderingArray = new bool[xDimension, yDimension];
+            await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+            {
+                ClearArray();
+            }));
+        }
+
+        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            RefreshFullArray();
+        }
+
         private void radioButton2_Checked(object sender, RoutedEventArgs e)
         {
             processor.SetNeighbourhood(Neighbourhood.Moore);
         }
 
-        private void radioButton2_Unchecked(object sender, RoutedEventArgs e)
+        private void radioButton3_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.SetBorderStyle(Library.Models.BorderStyle.Closed);
+        }
+
+        private void radioButton1_Checked(object sender, RoutedEventArgs e)
         {
             processor.SetNeighbourhood(Neighbourhood.VonNeumann);
         }
 
-        private async void clearButton_Click(object sender, RoutedEventArgs e)
+        private void radioButton4_Checked(object sender, RoutedEventArgs e)
         {
-            await processor.Clear();
+            processor.SetBorderStyle(Library.Models.BorderStyle.Periodic);
+        }
 
-            await Task.Run(() =>
+        private void radioButton5_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.SetNeighbourhood(Neighbourhood.ShapeControl);
+        }
+
+        private void clearButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!clearingBackgroundWorker.IsBusy)
             {
-                renderingArray = new bool[xDimension, yDimension];
-
-            }).ContinueWith((result) => Dispatcher.BeginInvoke((Action)(() =>
-            {
-                ClearArray();
-            })));
-
+                clearingBackgroundWorker.RunWorkerAsync();
+            }
         }
 
         private async void importButton_Click(object sender, RoutedEventArgs e)
         {
             var openingHandler = new OpeningHandler("Text files (*.txt)|*.txt|All files (*.*)|*.*");
             var path = openingHandler.GetPath();
+
+            if (path == null)
+            {
+                return;
+            }
 
             TextHandler.ImportFromTextFile(processor.Array, xDimension, yDimension, path);
 
@@ -208,6 +288,11 @@ namespace Grains
             var savingHandler = new SavingHandler("Text files (*.txt)|*.txt|All files (*.*)|*.*");
             var path = savingHandler.GetPath();
 
+            if (path == null)
+            {
+                return;
+            }
+
             TextHandler.ExportToTextFile(processor.Array, xDimension, yDimension, path);
         }
 
@@ -216,6 +301,11 @@ namespace Grains
             var savingHandler = new SavingHandler("Png files (*.png)|*.png|All files (*.*)|*.*");
             var path = savingHandler.GetPath();
 
+            if (path == null)
+            {
+                return;
+            }
+
             ImageHandler.ExportToImage(canvas, path);
         }
 
@@ -223,6 +313,11 @@ namespace Grains
         {
             var openingHandler = new OpeningHandler("Png files (*.png)|*.png|All files (*.*)|*.*");
             var path = openingHandler.GetPath();
+
+            if (path == null)
+            {
+                return;
+            }
 
             ImageHandler.ImportFromImage(processor.Array, xDimension, yDimension, 600, path);
 
@@ -255,6 +350,46 @@ namespace Grains
                     }));
                 }));
             });       
+        }
+
+        private void canvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var xRatio = this.canvas.Width / xDimension;
+            var yRatio = this.canvas.Height / yDimension; 
+            var startPoint = e.GetPosition(canvas);
+            this.coordinatesTextBox.Text = "X: " + (int)(startPoint.X / xRatio) + " Y: " + (int)(startPoint.Y / yRatio);
+        }
+
+        private void substructuresButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.processor.CreateSubstructure((Substructures)substructuresComboBox.SelectedItem, Convert.ToInt32(substructuresTextBox.Text));
+           // this.processor.ResetGrowth();
+
+            renderingArray = new bool[xDimension, yDimension];
+            ClearArray();
+            RefreshFullArray();
+        }
+
+        private void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (dispatcherTimer.IsEnabled)
+            {
+                startButton.Content = "Start";
+                dispatcherTimer.Stop();
+            }
+            else
+            {
+                startButton.Content = "Stop";
+                dispatcherTimer.Start();
+            }
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            if (!backgroundWorker.IsBusy)
+            {
+                backgroundWorker.RunWorkerAsync();
+            }
         }
     }
 }

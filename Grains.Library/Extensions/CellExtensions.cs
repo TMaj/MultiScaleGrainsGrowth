@@ -36,7 +36,7 @@ namespace Grains.Library.Extensions
                         break;
                     }
 
-                case BorderStyle.Transient:
+                case BorderStyle.Periodic:
                     {
                         if (cell.X >= matrix.Width)
                         {

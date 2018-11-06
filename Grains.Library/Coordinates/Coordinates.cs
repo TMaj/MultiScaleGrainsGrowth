@@ -23,7 +23,16 @@ namespace Grains.Library.Coordinates
                 new Point(0, -1),
                 new Point(-1, 0),
                 new Point(1, 0),
-                new Point(0, 1)
+                new Point(0, 1),
           };
+
+        public static Point[] InvertedVonNeumannCoordinates =>
+         new Point[]
+         {
+                new Point(-1, -1),                
+                new Point(1, -1),              
+                new Point(-1, 1),                
+                new Point(1, 1),
+         };
     }
 }

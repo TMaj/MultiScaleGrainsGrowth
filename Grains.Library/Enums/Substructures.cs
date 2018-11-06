@@ -4,5 +4,5 @@ using System.Text;
 
 namespace Grains.Library.Enums
 {
-    public enum Neighbourhood { Moore, VonNeumann, ShapeControl };
+    public enum Substructures { Substructure, DualPhase }
 }

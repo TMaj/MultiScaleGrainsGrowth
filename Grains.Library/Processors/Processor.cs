@@ -62,28 +62,34 @@ namespace Grains.Library.Processors
             });
         }
 
-        public void StartGrowth()
+        public void ResetGrowth()
         {
-
+            this.matrix1.NotEmptyCells = new bool[matrix1.Width, matrix1.Height];
+            this.matrix2.NotEmptyCells = new bool[matrix2.Width, matrix2.Height];
         }
 
-        public async void MakeStep()
+        public void CreateSubstructure(Substructures substructure, int grains)
         {
-            matrix2.AddStep(matrix1, neighbourhood);
-            await CloneMatrix(matrix2, matrix1);
+            this.matrix1.CreateSubstructure(substructure, grains);
+            CloneMatrix(matrix1, matrix2);
+        }
+
+        public void MakeStep(int x)
+        {
+            matrix2.AddStep(matrix1, neighbourhood, x);
+            CloneMatrix(matrix2, matrix1);
         }
 
         private async Task CloneMatrix(Matrix source, Matrix target)
         {
-            await Task.Run(() =>
+            target.RestrictedIds = source.RestrictedIds;
+
+            Parallel.For(0, source.Width, i =>
             {
-                target.NotEmptyCells = source.NotEmptyCells;
-                Parallel.For(0, source.Width, i =>
+                Parallel.For(0, source.Height, j =>
                 {
-                    Parallel.For(0, source.Height, j =>
-                    {
-                        target.Cells[i, j] = source.Cells[i, j];
-                    });
+                    target.Cells[i, j] = source.Cells[i, j];
+                    target.NotEmptyCells[i, j] = source.NotEmptyCells[i, j];
                 });
             });
         }

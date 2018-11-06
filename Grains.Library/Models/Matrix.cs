@@ -12,9 +12,11 @@ namespace Grains.Library.Models
         public int[,] Cells { get; set; }
         public bool[,] NotEmptyCells { get; set; }
         public BorderStyle Border { get; set; }
+        public List<int> RestrictedIds { get; set; }
 
         public Matrix(int size) : this(size, size)
         {
+            this.RestrictedIds = new List<int>();
         }
 
         public Matrix(int width, int heigth)
@@ -24,6 +26,7 @@ namespace Grains.Library.Models
             this.Height = heigth;
 
             this.NotEmptyCells = new bool[width, heigth];
+            this.RestrictedIds = new List<int>();
         }
 
         public void Add(Cell cell)
@@ -33,5 +36,5 @@ namespace Grains.Library.Models
         }
     }
 
-    public enum BorderStyle { Transient, Closed }
+    public enum BorderStyle { Periodic, Closed }
 }
