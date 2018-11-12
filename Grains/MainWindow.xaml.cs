@@ -133,16 +133,6 @@ namespace Grains
 
         private void RefreshFullArray()
         {
-
-            //Parallel.For(0, xDimension, (i) => {
-            //    Parallel.For(0, yDimension, (j) => {
-            //        Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
-            //        {
-            //            array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
-            //        }));
-            //    });
-            //});
-
             for (int i = 0; i < xDimension; i++)
             {
                 for (int j = 0; j < yDimension; j++)
@@ -158,11 +148,7 @@ namespace Grains
                     }
 
                     renderingArray[i, j] = true;
-                    // if (!renderingArray[i, j])
-                    // {
                     array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
-                  //      renderingArray[i, j] = processor.Array[i, j] != 0;
-                  //  }
                 }
             }
         }
@@ -219,6 +205,8 @@ namespace Grains
             {
                 ClearArray();
             }));
+
+            Dispatcher.Invoke(() => loadingStackPanel.Visibility = Visibility.Collapsed);
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -256,6 +244,7 @@ namespace Grains
             if (!clearingBackgroundWorker.IsBusy)
             {
                 clearingBackgroundWorker.RunWorkerAsync();
+                loadingStackPanel.Visibility = Visibility.Visible;
             }
         }
 
@@ -269,18 +258,13 @@ namespace Grains
                 return;
             }
 
-            TextHandler.ImportFromTextFile(processor.Array, xDimension, yDimension, path);
-
-            await Task.Run(() =>
-            {
-                renderingArray = new bool[xDimension, yDimension];
-                Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    ClearArray();
-                    InitializeColorsArray(processor.Array.Max());
-                    RefreshFullArray();
-                }));
-            });
+            await RunLongTask(TextHandler.ImportFromTextFile(processor.Array, xDimension, yDimension, path),
+                () => {
+                        renderingArray = new bool[xDimension, yDimension];
+                        ClearArray();
+                        InitializeColorsArray(processor.Array.Max());
+                        RefreshFullArray();
+                });
         }
 
         private void exportButton_Click(object sender, RoutedEventArgs e)
@@ -319,37 +303,24 @@ namespace Grains
                 return;
             }
 
-            ImageHandler.ImportFromImage(processor.Array, xDimension, yDimension, 600, path);
-
-            await Task.Run(() =>
-            {
-                renderingArray = new bool[xDimension, yDimension];
-                Dispatcher.BeginInvoke((Action)(() =>
-                {
+            await RunLongTask(ImageHandler.ImportFromImage(processor.Array, xDimension, yDimension, 600, path),
+                () => {
+                    renderingArray = new bool[xDimension, yDimension];
                     ClearArray();
                     InitializeColorsArray(processor.Array.Max());
                     RefreshFullArray();
-                }));
-            });
+                });
         }
 
         private async void inclusionsButton_Click(object sender, RoutedEventArgs e)
         {
-            await processor.AddInclusions(Convert.ToInt32(incusionsNumberField.Text), Convert.ToInt32(inclusionsSizeField.Text),
-                (Inclusions)inclusionsComboBox.SelectedItem);
-
-            await Task.Run(() =>
-            {
-                renderingArray = new bool[xDimension, yDimension];
-                Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    Dispatcher.BeginInvoke((Action)(() =>
-                    {
-                        renderingArray = new bool[xDimension, yDimension];
-                        RefreshFullArray();
-                    }));
-                }));
-            });       
+            await RunLongTask(processor.AddInclusions(Convert.ToInt32(incusionsNumberField.Text), 
+                                                      Convert.ToInt32(inclusionsSizeField.Text),
+                                                      (Inclusions)inclusionsComboBox.SelectedItem),
+                            () => {
+                                renderingArray = new bool[xDimension, yDimension];
+                                RefreshFullArray();
+                            });
         }
 
         private void canvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -360,14 +331,14 @@ namespace Grains
             this.coordinatesTextBox.Text = "X: " + (int)(startPoint.X / xRatio) + " Y: " + (int)(startPoint.Y / yRatio);
         }
 
-        private void substructuresButton_Click(object sender, RoutedEventArgs e)
+        private async void substructuresButton_Click(object sender, RoutedEventArgs e)
         {
-            this.processor.CreateSubstructure((Substructures)substructuresComboBox.SelectedItem, Convert.ToInt32(substructuresTextBox.Text));
-           // this.processor.ResetGrowth();
-
-            renderingArray = new bool[xDimension, yDimension];
-            ClearArray();
-            RefreshFullArray();
+            await RunLongTask(processor.CreateSubstructure((Substructures)substructuresComboBox.SelectedItem, Convert.ToInt32(substructuresTextBox.Text)),
+                ()=>{
+                renderingArray = new bool[xDimension, yDimension];
+                ClearArray();
+                RefreshFullArray();
+                });
         }
 
         private void startButton_Click(object sender, RoutedEventArgs e)
@@ -390,6 +361,32 @@ namespace Grains
             {
                 backgroundWorker.RunWorkerAsync();
             }
+        }
+
+        private async void createBordersButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RunLongTask(processor.AddBorders(Convert.ToInt32(bordersTextBox.Text)), (Action)(() =>
+            {
+                RefreshFullArray();
+                loadingStackPanel.Visibility = Visibility.Collapsed;
+            }));
+        }
+
+        private async Task RunLongTask(Task longTask, Action afterCompleted)
+        {
+            var longOperation =  longTask.ContinueWith((task) => {
+                renderingArray = new bool[xDimension, yDimension];
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    loadingStackPanel.Visibility = Visibility.Visible;
+                    afterCompleted();
+                    loadingStackPanel.Visibility = Visibility.Collapsed;
+                }));
+            });
+
+            loadingStackPanel.Visibility = Visibility.Visible;
+
+            await longOperation;
         }
     }
 }

@@ -24,20 +24,23 @@ namespace Grains.Utilities.TextHandler
             }
         }
 
-        public static void ImportFromTextFile(int[,] array, int xDimension, int yDimension, string path)
+        public async static Task ImportFromTextFile(int[,] array, int xDimension, int yDimension, string path)
         {
-            using (var inputFile = new StreamReader(path))
+            await Task.Run(() =>
             {
-                for (int i = 0; i < xDimension; i++)
+                using (var inputFile = new StreamReader(path))
                 {
-                    var line = inputFile.ReadLine().Split();
-
-                    for (int j = 0; j < xDimension; j++)
+                    for (int i = 0; i < xDimension; i++)
                     {
-                        array[i, j] = Convert.ToInt32(line[j]);
+                        var line = inputFile.ReadLine().Split();
+
+                        for (int j = 0; j < xDimension; j++)
+                        {
+                            array[i, j] = Convert.ToInt32(line[j]);
+                        }
                     }
                 }
-            }
+            });
         }
     }
 }

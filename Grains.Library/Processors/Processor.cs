@@ -42,6 +42,12 @@ namespace Grains.Library.Processors
             await CloneMatrix(matrix1, matrix2);
         }
 
+        public async Task AddBorders(int size)
+        {
+            await Task.Run(() => matrix1.AddBorders(size));
+            await CloneMatrix(matrix1, matrix2);
+        }
+
         public void SetNeighbourhood(Neighbourhood neighbourhood)
         {
             this.neighbourhood = neighbourhood;
@@ -68,10 +74,10 @@ namespace Grains.Library.Processors
             this.matrix2.NotEmptyCells = new bool[matrix2.Width, matrix2.Height];
         }
 
-        public void CreateSubstructure(Substructures substructure, int grains)
+        public async Task CreateSubstructure(Substructures substructure, int grains)
         {
-            this.matrix1.CreateSubstructure(substructure, grains);
-            CloneMatrix(matrix1, matrix2);
+            await Task.Run(()=>this.matrix1.CreateSubstructure(substructure, grains));
+            await CloneMatrix(matrix1, matrix2);
         }
 
         public void MakeStep(int x)

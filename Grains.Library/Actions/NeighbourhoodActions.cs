@@ -48,10 +48,7 @@ namespace Grains.Library.Actions
             {
                 return;
             };
-
-            //var random = new Random();
-            //var randomNumber = random.Next(100);
-
+            
             if (randomNumber <= x)
             {
                 coordinates = Coordinates.Coordinates.MooreCoordinates;

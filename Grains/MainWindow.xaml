@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:Grains"
         mc:Ignorable="d"
         Title="MainWindow" Height="746.465" Width="797.527" Background="#FF9DA1F7">
@@ -15,9 +16,8 @@
             </TransformGroup>
         </Grid.RenderTransform>
         <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="600" Margin="0,0,0,0" VerticalAlignment="Top" Width="600
-                " Background="#FFFFFFFF" MouseDown="canvas_MouseDown">
-            <Label Content="X" Canvas.Left="641" Canvas.Top="250"/>
-        </Canvas>
+                " Background="#FFFFFFFF" MouseDown="canvas_MouseDown"/>
+        <Label Content="X"  HorizontalAlignment="Left" Margin="634,253,0,0" VerticalAlignment="Top"/>
         <RadioButton x:Name="radioButton1" Content="Von Neumann" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,192,0,0" VerticalAlignment="Top" Checked="radioButton1_Checked"/>
         <RadioButton x:Name="radioButton2" Content="Moore" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,212,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked" IsChecked="True"/>
         <RadioButton x:Name="radioButton5" Content="Shape Control" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,233,0,0" VerticalAlignment="Top" Checked="radioButton5_Checked" IsChecked="False" Width="114"/>
@@ -51,5 +51,15 @@
         <ComboBox x:Name="substructuresComboBox" HorizontalAlignment="Left" Margin="634,484,0,0" VerticalAlignment="Top" Width="114"/>
         <Button x:Name="substructuresButton" Content="Substructure" Margin="634,511,44,175" Click="substructuresButton_Click" />
         <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="615,38,0,0" VerticalAlignment="Top" Width="54" Height="21" Click="startButton_Click"/>
+        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="108" Margin="624,561,0,0" VerticalAlignment="Top" Width="135"/>
+        <TextBox x:Name="bordersTextBox" Height="23" Margin="0,610,44,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="39" RenderTransformOrigin="1.268,0.609"/>
+        <Button x:Name="createBordersButton" Content="Create" HorizontalAlignment="Left" Margin="634,585,0,0" VerticalAlignment="Top" Width="114" RenderTransformOrigin="0.5,0.5" Click="createBordersButton_Click">
+
+        </Button>
+        <Label Content="Thickness" HorizontalAlignment="Left" Margin="639,610,0,0" VerticalAlignment="Top" RenderTransformOrigin="3.789,-0.538"/>
+        <CheckBox x:Name="bordersCheckbox" Content="Choose" HorizontalAlignment="Left" Margin="638,638,0,0" VerticalAlignment="Top" Width="109"/>
+        <StackPanel x:Name="loadingStackPanel" HorizontalAlignment="Left" Height="64" Margin="201,275,0,0" VerticalAlignment="Top" Width="188" Background="White" Visibility="Collapsed">
+            <Label x:Name="loadingLabel" Content="Processing" FontSize="36" Height="65" Margin="0,0,10,0"/>
+        </StackPanel>
     </Grid>
 </Window>

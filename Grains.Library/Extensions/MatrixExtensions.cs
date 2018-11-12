@@ -93,6 +93,11 @@ namespace Grains.Library.Extensions
 
         public static void CreateSubstructure(this Matrix matrix, Substructures substructure, int grains)
         {
+            if (matrix.NotEmptyCells.Length == 0)
+            {
+                return;
+            }
+
             var random = new Random();
             var chosenIds = new List<int>();
 
@@ -155,5 +160,49 @@ namespace Grains.Library.Extensions
                     }
             }
         }
+
+        public static void AddBorders(this Matrix matrix, int size)
+        {
+            var ids = new List<int>();
+
+            foreach (var id in matrix.Cells)
+            {
+                if (!ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            
+
+            for (int x = 0; x < size; x++)
+            {
+                var coordinates = Coordinates.Coordinates.WidenMooreCoordinates(x);
+
+                for (int i = 0; i < matrix.Width; i++)
+                {
+                    for (int j = 0; j < matrix.Height; j++)
+                    {
+                        var currentCell = new Cell(i, j, matrix.Cells[i, j]);
+
+                        foreach (var point in coordinates)
+                        {
+                            var tempCell = currentCell.Get(point.X, point.Y).NormalizeCell(matrix);
+                            var tempId = matrix.Cells[tempCell.X, tempCell.Y];
+
+                            if (currentCell.Id == 1)
+                            {
+                                continue;
+                            }
+
+                            if (tempId != currentCell.Id && tempId != 1)
+                            {
+                                matrix.Cells[tempCell.X, tempCell.Y] = 1;
+                            }
+                        }
+                    }
+                }
+            }            
+        }       
     }
 }

@@ -32,37 +32,40 @@ namespace Grains.Utilities.ImageHandler
             }
         }
 
-        public static void ImportFromImage(int[,] array, int xDimension, int yDimension, int targetResolution, string path)
+        public async static Task ImportFromImage(int[,] array, int xDimension, int yDimension, int targetResolution, string path)
         {
-            var originalBitmap = new Bitmap(path);
-            var bitmap = new Bitmap(originalBitmap, targetResolution, targetResolution);
-            
-            int id = 0;
-            var ids = new Dictionary<string, int>();
-
-            int x = bitmap.Size.Width;
-            int y = bitmap.Size.Height;
-
-            int ratio = targetResolution / xDimension;
-
-            for (int i = 0; i < xDimension; i++)
+            await Task.Run(() =>
             {
-                for (int j = 0; j < yDimension; j++)
-                {
-                    var pixelColor = bitmap.GetPixel(i*ratio, j*ratio).ToString();
+                var originalBitmap = new Bitmap(path);
+                var bitmap = new Bitmap(originalBitmap, targetResolution, targetResolution);
 
-                    if (ids.ContainsKey(pixelColor))
+                int id = 0;
+                var ids = new Dictionary<string, int>();
+
+                int x = bitmap.Size.Width;
+                int y = bitmap.Size.Height;
+
+                int ratio = targetResolution / xDimension;
+
+                for (int i = 0; i < xDimension; i++)
+                {
+                    for (int j = 0; j < yDimension; j++)
                     {
-                        array[i, j] = ids[pixelColor];
-                    }
-                    else
-                    {
-                        int newId = ++id;
-                        ids.Add(pixelColor, newId);
-                        array[i, j] = newId;
+                        var pixelColor = bitmap.GetPixel(i * ratio, j * ratio).ToString();
+
+                        if (ids.ContainsKey(pixelColor))
+                        {
+                            array[i, j] = ids[pixelColor];
+                        }
+                        else
+                        {
+                            int newId = ++id;
+                            ids.Add(pixelColor, newId);
+                            array[i, j] = newId;
+                        }
                     }
                 }
-            }
+            });
         }
     }
 }
