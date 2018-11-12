@@ -6,7 +6,7 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:Grains"
         mc:Ignorable="d"
-        Title="MainWindow" Height="746.465" Width="797.527" Background="#FF9DA1F7">
+        Title="Simple grains growth" Height="746.465" Width="797.527" Background="#FF9DA1F7">
     <Grid Margin="0,0,-2,-3" RenderTransformOrigin="0.5,0.5">
         <Grid.RenderTransform>
             <TransformGroup>
@@ -26,7 +26,7 @@
         <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Left" Margin="684,39,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.336,0.54" Click="clearButton_Click"/>
         <Button x:Name="stepButton" Content="Step" HorizontalAlignment="Left" Margin="615,72,0,0" VerticalAlignment="Top" Width="144" Height="22" Click="stepButton_Click"/>
         <RadioButton x:Name="radioButton3" GroupName="Borders" Content="Fixed" HorizontalAlignment="Left" Margin="634,123,0,0" VerticalAlignment="Top" IsChecked="False" Checked="radioButton3_Checked"/>
-        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Transient" HorizontalAlignment="Left" Margin="634,138,0,0" VerticalAlignment="Top" IsChecked="True" Checked="radioButton4_Checked"/>
+        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Periodic" HorizontalAlignment="Left" Margin="634,138,0,0" VerticalAlignment="Top" IsChecked="True" Checked="radioButton4_Checked"/>
         <Button x:Name="importButton" Content="Import from text file" HorizontalAlignment="Left" Margin="10,621,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importButton_Click"/>
         <Button x:Name="exportButton" Content="Export to text file" HorizontalAlignment="Left" Margin="10,662,0,0" VerticalAlignment="Top" Width="131" Height="33" Click="exportButton_Click"/>
         <Button x:Name="importImageButton" Content="Import from image" HorizontalAlignment="Left" Margin="155,621,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importImageButton_Click"/>
@@ -43,7 +43,7 @@
         <TextBox x:Name="inclusionsSizeField" HorizontalAlignment="Left" Height="23" Margin="693,341,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="55"/>
         <TextBox x:Name="incusionsNumberField" HorizontalAlignment="Left" Height="23" Margin="693,313,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="55"/>
         <ComboBox x:Name="inclusionsComboBox" HorizontalAlignment="Left" Margin="634,370,0,0" VerticalAlignment="Top" Width="114"/>
-        <TextBox x:Name="coordinatesTextBox" HorizontalAlignment="Left" Height="23" Margin="693,685,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" IsEnabled="False"/>
+        <TextBox x:Name="coordinatesTextBox" HorizontalAlignment="Left" Height="23" Margin="511,610,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" IsEnabled="False"/>
         <GroupBox x:Name="substructuresGroupBox" Header="Substructures" HorizontalAlignment="Left" Height="123" Margin="624,433,0,0" VerticalAlignment="Top" Width="135">
         </GroupBox>
         <TextBox x:Name="substructuresTextBox" HorizontalAlignment="Left" Height="23" Margin="684,456,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="64"/>
@@ -51,7 +51,7 @@
         <ComboBox x:Name="substructuresComboBox" HorizontalAlignment="Left" Margin="634,484,0,0" VerticalAlignment="Top" Width="114"/>
         <Button x:Name="substructuresButton" Content="Substructure" Margin="634,511,44,175" Click="substructuresButton_Click" />
         <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="615,38,0,0" VerticalAlignment="Top" Width="54" Height="21" Click="startButton_Click"/>
-        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="108" Margin="624,561,0,0" VerticalAlignment="Top" Width="135"/>
+        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="134" Margin="624,561,0,0" VerticalAlignment="Top" Width="135"/>
         <TextBox x:Name="bordersTextBox" Height="23" Margin="0,610,44,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="39" RenderTransformOrigin="1.268,0.609"/>
         <Button x:Name="createBordersButton" Content="Create" HorizontalAlignment="Left" Margin="634,585,0,0" VerticalAlignment="Top" Width="114" RenderTransformOrigin="0.5,0.5" Click="createBordersButton_Click">
 
@@ -61,5 +61,9 @@
         <StackPanel x:Name="loadingStackPanel" HorizontalAlignment="Left" Height="64" Margin="201,275,0,0" VerticalAlignment="Top" Width="188" Background="White" Visibility="Collapsed">
             <Label x:Name="loadingLabel" Content="Processing" FontSize="36" Height="65" Margin="0,0,10,0"/>
         </StackPanel>
+        <Button x:Name="clearBackgroundButton" Content="Clear Background" HorizontalAlignment="Left" Margin="638,662,0,0" VerticalAlignment="Top" Width="109" Click="clearBackgroundButton_Click"/>
+            
+        <Label x:Name="percentLabel" Content="% of GB" HorizontalAlignment="Left" Margin="454,634,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="percentageLabel" Content="" HorizontalAlignment="Left" Margin="550,635,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

@@ -13,12 +13,14 @@ namespace Grains.Library.Extensions
 {
     public static class MatrixExtensions
     {
-        public static List<Cell> AddRandomGrains(this Matrix matrix, int amount)
+        public static int AddRandomGrains(this Matrix matrix, int amount)
         {
             var randomCells = new List<Cell>();
             var rnd = new Random();
 
-            for (int i = 0; i < amount; i++)
+            var startId = matrix.Cells.Max();
+
+            for (int i = startId; i < startId + amount; i++)
             {
                 int x = rnd.Next(matrix.Width);
                 int y = rnd.Next(matrix.Height);
@@ -41,7 +43,7 @@ namespace Grains.Library.Extensions
                 randomCells.Add(cell);
             }
 
-            return randomCells;
+            return startId + amount;
         }
 
         public static void AddInclusions(this Matrix matrix, int amount, int size, Inclusions type)
@@ -163,18 +165,6 @@ namespace Grains.Library.Extensions
 
         public static void AddBorders(this Matrix matrix, int size)
         {
-            var ids = new List<int>();
-
-            foreach (var id in matrix.Cells)
-            {
-                if (!ids.Contains(id))
-                {
-                    ids.Add(id);
-                }
-            }
-
-            
-
             for (int x = 0; x < size; x++)
             {
                 var coordinates = Coordinates.Coordinates.WidenMooreCoordinates(x);
@@ -198,11 +188,81 @@ namespace Grains.Library.Extensions
                             if (tempId != currentCell.Id && tempId != 1)
                             {
                                 matrix.Cells[tempCell.X, tempCell.Y] = 1;
+                                matrix.NotEmptyCells[tempCell.X, tempCell.Y] = true;
                             }
                         }
                     }
                 }
             }            
-        }       
+        }
+
+        public static void AddSingleBorder(this Matrix matrix, int size, int x, int y)
+        {
+            var desiredId = matrix.Cells[x, y];
+
+            for (int s = 0; s < size; s++)
+            {
+                var coordinates = Coordinates.Coordinates.WidenMooreCoordinates(s);
+
+                for (int i = 0; i < matrix.Width; i++)
+                {
+                    for (int j = 0; j < matrix.Height; j++)
+                    {
+                        if (matrix.Cells[i, j] != desiredId)
+                        {
+                            continue;
+                        }
+
+                        var currentCell = new Cell(i, j, matrix.Cells[i, j]);
+
+                        foreach (var point in coordinates)
+                        {
+                            var tempCell = currentCell.Get(point.X, point.Y).NormalizeCell(matrix);
+                            var tempId = matrix.Cells[tempCell.X, tempCell.Y];
+
+                            if (currentCell.Id == 1)
+                            {
+                                continue;
+                            }
+
+                            if (tempId != currentCell.Id && tempId != 1)
+                            {
+                                matrix.Cells[tempCell.X, tempCell.Y] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void ClearAllButBorders(this Matrix matrix)
+        {
+            Parallel.For(0, matrix.Width, (i) => {
+                Parallel.For(0, matrix.Height, (j) => {
+                    if (matrix.Cells[i, j] != 1)
+                    {
+                        matrix.Cells[i, j] = 0;
+                        matrix.NotEmptyCells[i, j] = false;
+                    }
+                });
+            });
+        }
+
+        public static double GetBordersPercentage(this Matrix matrix)
+        {
+            int bordersNumber = 0;
+
+            foreach (var id in matrix.Cells)
+            {
+                if (id == 1)
+                {
+                    bordersNumber++;
+                }
+            }
+
+            double percentage = ((double)bordersNumber /(double)(matrix.Width * matrix.Height)) * 100;
+
+            return percentage;
+        }
     }
 }

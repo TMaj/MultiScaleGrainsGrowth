@@ -14,7 +14,7 @@ namespace Grains.Library.Processors
         private int width;
         private int height;
 
-        public List<Cell> UpdatedCells;
+        public int IdsNumber => this.matrix1.Cells.Max();
 
         public int[,] Array => matrix1.Cells;
 
@@ -27,7 +27,6 @@ namespace Grains.Library.Processors
 
             this.width = width;
             this.height = height;
-            UpdatedCells = new List<Cell>();
         }
 
         public async Task AddRandomGrains(int amount)
@@ -46,6 +45,25 @@ namespace Grains.Library.Processors
         {
             await Task.Run(() => matrix1.AddBorders(size));
             await CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task AddSingleBorder(int size, int x, int y)
+        {
+            await Task.Run(() => matrix1.AddSingleBorder(size, x, y));
+            await CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task ClearAllButBorders()
+        {
+            await Task.Run(() => matrix1.ClearAllButBorders());
+            await CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task<double> GetBordersPercentage()
+        {
+            double percentage = 0;
+            percentage = matrix1.GetBordersPercentage();
+            return percentage;
         }
 
         public void SetNeighbourhood(Neighbourhood neighbourhood)
@@ -99,5 +117,6 @@ namespace Grains.Library.Processors
                 });
             });
         }
+
     }
 }
