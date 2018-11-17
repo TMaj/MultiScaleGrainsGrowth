@@ -15,35 +15,38 @@ namespace Grains.Library.Extensions
     {
         public static void AddRandomGrains(this Matrix matrix, int amount)
         {
-            var randomCells = new List<Cell>();
-            var rnd = new Random();
+            var emptyCells = new List<Cell>();
 
-           // var startId = matrix.Cells.Max();
+            for (int i = 0; i < matrix.Width; i++)
+            {
+                for (int j = 0; j < matrix.Height; j++)
+                {
+                    if (matrix.Cells[i, j] != 0)
+                    {
+                        continue;
+                    }
+
+                    emptyCells.Add(new Cell(i, j));
+                }
+            }
+
+            var rnd = new Random();
 
             for (int i = 0; i < amount; i++)
             {
-                int x = rnd.Next(matrix.Width);
-                int y = rnd.Next(matrix.Height);
+                int x = rnd.Next(emptyCells.Count);
 
                 var newId = i + 2;
-
-                if (matrix.Cells[x, y] != 0)
-                {
-                    i--;
-                    continue;
-                }
 
                 if (matrix.RestrictedIds.Contains(newId))
                 {
                     continue;
                 }
 
-                var cell = new Cell(x, y, newId);
-                matrix.Add(cell);
-                randomCells.Add(cell);
+                emptyCells[x].Id = newId;
+                matrix.Add(emptyCells[x]);
+                emptyCells.RemoveAt(x);
             }
-
-            //return startId + amount;
         }
 
         public static void AddInclusions(this Matrix matrix, int amount, int size, Inclusions type)
