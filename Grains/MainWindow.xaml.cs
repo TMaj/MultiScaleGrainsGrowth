@@ -41,7 +41,7 @@ namespace Grains
 
             array = new Rectangle[xDimension, yDimension];
             processor = new Processor(xDimension, yDimension);
-            colorsArray = new Color[10];
+            colorsArray = new Color[0];
             renderingArray = new bool[xDimension, yDimension];
             backgroundWorker = new BackgroundWorker();
             clearingBackgroundWorker = new BackgroundWorker();
@@ -94,19 +94,44 @@ namespace Grains
 
         private void InitializeColorsArray(int value)
         {
-            colorsArray = new Color[value + 2];
-            var rand = new Random();
-            colorsArray[0] = Colors.White;
-            colorsArray[1] = Colors.Black;
-
-            for (int i = 2; i < value + 2; i++)
+            if (colorsArray != null && colorsArray.Count() != 0)
             {
-                var color = new Color();
-                color.R = (byte)rand.Next(0, 255);
-                color.G = (byte)rand.Next(0, 255);
-                color.B = (byte)rand.Next(0, 255);
-                color.A = 255;
-                colorsArray[i] = color;
+                var oldColors = colorsArray;
+                colorsArray = new Color[value + 2];
+
+                for (int i = 0; i < oldColors.Count(); i++)
+                {
+                    colorsArray[i] = oldColors[i];
+                }
+
+                var rand = new Random();
+
+                for (int i = oldColors.Count(); i < value + 2; i++)
+                {
+                    var color = new Color();
+                    color.R = (byte)rand.Next(0, 255);
+                    color.G = (byte)rand.Next(0, 255);
+                    color.B = (byte)rand.Next(0, 255);
+                    color.A = 255;
+                    colorsArray[i] = color;
+                }
+            }
+            else
+            {
+                colorsArray = new Color[value + 2];
+                var rand = new Random();
+                colorsArray[0] = Colors.White;
+                colorsArray[1] = Colors.Black;
+
+                for (int i = 2; i < value + 2; i++)
+                {
+                    var color = new Color();
+                    color.R = (byte)rand.Next(0, 255);
+                    color.G = (byte)rand.Next(0, 255);
+                    color.B = (byte)rand.Next(0, 255);
+                    color.A = 255;
+                    colorsArray[i] = color;
+                }
             }
         }
 
