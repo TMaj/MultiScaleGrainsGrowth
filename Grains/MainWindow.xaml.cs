@@ -26,7 +26,6 @@ namespace Grains
         private Rectangle[,] array;
         private Processor processor;
         private Color[] colorsArray;
-        private bool[,] renderingArray;
         private int xDimension;
         private int yDimension;
 
@@ -42,7 +41,6 @@ namespace Grains
             array = new Rectangle[xDimension, yDimension];
             processor = new Processor(xDimension, yDimension);
             colorsArray = new Color[0];
-            renderingArray = new bool[xDimension, yDimension];
             backgroundWorker = new BackgroundWorker();
             clearingBackgroundWorker = new BackgroundWorker();
 
@@ -92,45 +90,73 @@ namespace Grains
             }
         }
 
+        private Color GetRandomColor(Random random)
+        {
+            var color = new Color();
+            color.R = (byte)random.Next(0, 255);
+            color.G = (byte)random.Next(0, 255);
+            color.B = (byte)random.Next(0, 255);
+            color.A = 255;
+
+            return color;
+        }
+
         private void InitializeColorsArray(int value)
         {
+            var rand = new Random();
+
             if (colorsArray != null && colorsArray.Count() != 0)
             {
+                if (this.processor.Array.Max() + 2 <= colorsArray.Length)
+                {
+                    return;
+                }
+
                 var oldColors = colorsArray;
-                colorsArray = new Color[value + 2];
 
-                for (int i = 0; i < oldColors.Count(); i++)
-                {
-                    colorsArray[i] = oldColors[i];
-                }
+              //  if (oldColors.Count() > value + 2)
+             //   {
+                    colorsArray = new Color[oldColors.Count() + value];
 
-                var rand = new Random();
+                    for (int i = oldColors.Count(); i < oldColors.Count() + value; i++)
+                    {
+                        colorsArray[i] = GetRandomColor(rand);
+                    }
+             //   }
+                //else
+                //{
+                    
+                //}
+                
+                //colorsArray = new Color[value + 2];
 
-                for (int i = oldColors.Count(); i < value + 2; i++)
-                {
-                    var color = new Color();
-                    color.R = (byte)rand.Next(0, 255);
-                    color.G = (byte)rand.Next(0, 255);
-                    color.B = (byte)rand.Next(0, 255);
-                    color.A = 255;
-                    colorsArray[i] = color;
-                }
+                //var border = oldColors.Count() > colorsArray.Count() ? colorsArray.Count() : oldColors.Count();
+                //for (int i = 0; i < border; i++)
+                //{
+                //    colorsArray[i] = oldColors[i];
+                //}
+
+               
+
+                //for (int i = border; i < value + 2; i++)
+                //{
+                //    var color = new Color();
+                //    color.R = (byte)rand.Next(0, 255);
+                //    color.G = (byte)rand.Next(0, 255);
+                //    color.B = (byte)rand.Next(0, 255);
+                //    color.A = 255;
+                //    colorsArray[i] = color;
+                //}
             }
             else
             {
                 colorsArray = new Color[value + 2];
-                var rand = new Random();
                 colorsArray[0] = Colors.White;
                 colorsArray[1] = Colors.Black;
 
                 for (int i = 2; i < value + 2; i++)
                 {
-                    var color = new Color();
-                    color.R = (byte)rand.Next(0, 255);
-                    color.G = (byte)rand.Next(0, 255);
-                    color.B = (byte)rand.Next(0, 255);
-                    color.A = 255;
-                    colorsArray[i] = color;
+                    colorsArray[i] = GetRandomColor(rand);
                 }
             }
         }
@@ -167,12 +193,11 @@ namespace Grains
                         continue;
                     }
 
-                    if (renderingArray[i, j] == true)
+                    if (array[i, j].Fill.ToString().Equals(colorsArray[processor.Array[i, j]].ToString()))
                     {
                         continue;
                     }
 
-                    renderingArray[i, j] = true;
                     array[i, j].Fill = new SolidColorBrush(colorsArray[processor.Array[i, j]]);
                 }
             }
@@ -203,22 +228,23 @@ namespace Grains
 
             InitializeColorsArray(processor.IdsNumber);
 
-            renderingArray = new bool[xDimension, yDimension];
             RefreshFullArray();
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             int x = 90;
+            double j = 0.1;
             xTextBox.Dispatcher.Invoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate { x = Convert.ToInt32(this.xTextBox.Text); });
-            processor.MakeStep(x);
+            jgbTextBox.Dispatcher.Invoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate { j = double.Parse(jgbTextBox.Text, System.Globalization.CultureInfo.InvariantCulture); });
+            processor.MakeStep(x, j);
         }
 
         private async void clearingbackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             await processor.Clear();
-            renderingArray = new bool[xDimension, yDimension];
             await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
                 ClearArray();
@@ -234,7 +260,7 @@ namespace Grains
 
         private void radioButton2_Checked(object sender, RoutedEventArgs e)
         {
-            processor.SetNeighbourhood(Neighbourhood.Moore);
+            processor.Neighbourhood = Neighbourhood.Moore;
         }
 
         private void radioButton3_Checked(object sender, RoutedEventArgs e)
@@ -244,7 +270,7 @@ namespace Grains
 
         private void radioButton1_Checked(object sender, RoutedEventArgs e)
         {
-            processor.SetNeighbourhood(Neighbourhood.VonNeumann);
+            processor.Neighbourhood = Neighbourhood.VonNeumann;
         }
 
         private void radioButton4_Checked(object sender, RoutedEventArgs e)
@@ -254,7 +280,7 @@ namespace Grains
 
         private void radioButton5_Checked(object sender, RoutedEventArgs e)
         {
-            processor.SetNeighbourhood(Neighbourhood.ShapeControl);
+            processor.Neighbourhood = Neighbourhood.ShapeControl;
         }
 
         private void clearButton_Click(object sender, RoutedEventArgs e)
@@ -278,7 +304,6 @@ namespace Grains
 
             await RunLongTask(TextHandler.ImportFromTextFile(processor.Array, xDimension, yDimension, path),
                 () => {
-                    renderingArray = new bool[xDimension, yDimension];
                     ClearArray();
                     InitializeColorsArray(processor.Array.Max());
                     RefreshFullArray();
@@ -323,7 +348,6 @@ namespace Grains
 
             await RunLongTask(ImageHandler.ImportFromImage(processor.Array, xDimension, yDimension, 600, path),
                 () => {
-                    renderingArray = new bool[xDimension, yDimension];
                     ClearArray();
                     InitializeColorsArray(processor.Array.Max());
                     RefreshFullArray();
@@ -336,7 +360,6 @@ namespace Grains
                                                       Convert.ToInt32(inclusionsSizeField.Text),
                                                       (Inclusions)inclusionsComboBox.SelectedItem),
                             () => {
-                                renderingArray = new bool[xDimension, yDimension];
                                 RefreshFullArray();
                             });
         }
@@ -356,7 +379,6 @@ namespace Grains
             {
                 await RunLongTask(processor.AddSingleBorder(Convert.ToInt32(bordersTextBox.Text), clickedX, clickedY),
                     () => {
-                        renderingArray = new bool[xDimension, yDimension];
                         SetBordersPercentage();
                         RefreshFullArray();
                     });
@@ -367,7 +389,6 @@ namespace Grains
         {
             await RunLongTask(processor.CreateSubstructure((Substructures)substructuresComboBox.SelectedItem, Convert.ToInt32(substructuresTextBox.Text)),
                 () => {
-                    renderingArray = new bool[xDimension, yDimension];
                     ClearArray();
                     RefreshFullArray();
                 });
@@ -397,7 +418,7 @@ namespace Grains
 
         private async void createBordersButton_Click(object sender, RoutedEventArgs e)
         {
-            await RunLongTask(processor.AddBorders(Convert.ToInt32(bordersTextBox.Text)), (Action)(() =>
+            await RunLongTask(processor.AddBorders(Convert.ToInt32(bordersTextBox.Text)), (() =>
             {
                 RefreshFullArray();
                 SetBordersPercentage();
@@ -410,8 +431,21 @@ namespace Grains
             await RunLongTask(processor.ClearAllButBorders(),
                 () =>
                 {
-                    renderingArray = new bool[xDimension, yDimension];
                     ClearArray();
+                    RefreshFullArray();
+                });
+        }
+
+        private async void SetBordersPercentage()
+        {
+            percentageLabel.Content = String.Format("{0:F2}", await processor.GetBordersPercentage());
+        }
+
+        private async void McGenerationButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RunLongTask(this.processor.GenerateMonteCarloArea(Convert.ToInt32(mcStatesTextBox.Text)),
+                () => {
+                    InitializeColorsArray(Convert.ToInt32(mcStatesTextBox.Text));
                     RefreshFullArray();
                 });
         }
@@ -419,7 +453,6 @@ namespace Grains
         private async Task RunLongTask(Task longTask, Action afterCompleted)
         {
             var longOperation = longTask.ContinueWith((task) => {
-                renderingArray = new bool[xDimension, yDimension];
                 Dispatcher.Invoke((Action)(() =>
                 {
                     loadingStackPanel.Visibility = Visibility.Visible;
@@ -433,9 +466,27 @@ namespace Grains
             await longOperation;
         }
 
-        private async void SetBordersPercentage()
+        private void SimCARadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            percentageLabel.Content = String.Format("{0:F2}", await processor.GetBordersPercentage());
+            this.processor.SimulationType = SimulationType.CellularAutomata;
+        }
+
+        private void SimMCRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            this.processor.SimulationType = SimulationType.MonteCarlo;
+        }
+
+        private void JgbTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (double.Parse(jgbTextBox.Text, System.Globalization.CultureInfo.InvariantCulture) < 0.1)
+            {
+                jgbTextBox.Text = "0.1";
+            }
+
+            if (double.Parse(jgbTextBox.Text, System.Globalization.CultureInfo.InvariantCulture) > 1)
+            {
+                jgbTextBox.Text = "1";
+            }
         }
     }
 }

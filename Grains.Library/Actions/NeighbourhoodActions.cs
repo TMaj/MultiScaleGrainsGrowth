@@ -8,25 +8,25 @@ using System.Text;
 
 namespace Grains.Library.Actions
 {
-    public delegate void NeighbourhoodCalculation(Matrix originalMatrix, int[,] referenceArray, Cell currentCell, int randomNumber = 1, int x = 100);
+    public delegate void NeighbourhoodCalculation(Matrix originalMatrix, Cell currentCell, int[,] referenceArray = null, int randomNumber = 1, int x = 100);
 
     public static class NeighbourhoodActions
     {
-        public static NeighbourhoodCalculation MooreAction => (Matrix originalMatrix, int[,] referenceArray, Cell currentCell, int randomNumber, int x) =>
+        public static NeighbourhoodCalculation MooreAction => (Matrix originalMatrix, Cell currentCell, int[,] referenceArray, int randomNumber, int x) =>
         { 
             var coordinates = Coordinates.Coordinates.MooreCoordinates;
 
             NeighbourhoodCalculation(originalMatrix, referenceArray, currentCell, coordinates, 0);
         };
 
-        public static NeighbourhoodCalculation VonNeumannAction => (Matrix originalMatrix, int[,] referenceArray, Cell currentCell, int randomNumber, int x) =>
+        public static NeighbourhoodCalculation VonNeumannAction => (Matrix originalMatrix, Cell currentCell, int[,] referenceArray, int randomNumber, int x) =>
         {
             var coordinates = Coordinates.Coordinates.VonNeumannCoordinates;
 
             NeighbourhoodCalculation(originalMatrix, referenceArray, currentCell, coordinates, 0);
         };
 
-        public static NeighbourhoodCalculation ShapeControlAction => (Matrix originalMatrix, int[,] referenceArray, Cell currentCell, int randomNumber, int x) =>
+        public static NeighbourhoodCalculation ShapeControlAction => (Matrix originalMatrix, Cell currentCell, int[,] referenceArray, int randomNumber, int x) =>
         {
             var coordinates = Coordinates.Coordinates.MooreCoordinates;
 

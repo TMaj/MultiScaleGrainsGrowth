@@ -18,7 +18,9 @@ namespace Grains.Library.Processors
 
         public int[,] Array => matrix1.Cells;
 
-        private Neighbourhood neighbourhood;
+        public Neighbourhood Neighbourhood { get; set; }
+
+        public SimulationType SimulationType { get; set; }
 
         public Processor(int width, int height)
         {
@@ -27,6 +29,8 @@ namespace Grains.Library.Processors
 
             this.width = width;
             this.height = height;
+
+            SimulationType = SimulationType.MonteCarlo;
         }
 
         public async Task AddRandomGrains(int amount)
@@ -62,15 +66,10 @@ namespace Grains.Library.Processors
         public async Task<double> GetBordersPercentage()
         {
             double percentage = 0;
-            percentage = matrix1.GetBordersPercentage();
+            await Task.Run(() => percentage = matrix1.GetBordersPercentage());
             return percentage;
         }
-
-        public void SetNeighbourhood(Neighbourhood neighbourhood)
-        {
-            this.neighbourhood = neighbourhood;
-        }
-
+        
         public void SetBorderStyle(BorderStyle borderStyle)
         {
             matrix1.Border = borderStyle;
@@ -98,15 +97,37 @@ namespace Grains.Library.Processors
             await CloneMatrix(matrix1, matrix2);
         }
 
-        public void MakeStep(int x)
+        public void MakeStep(int x, double j)
         {
-            matrix2.AddStep(matrix1, neighbourhood, x);
+            switch (SimulationType)
+            {
+                case SimulationType.CellularAutomata:
+                    {
+                        matrix2.AddCAStep(matrix1, Neighbourhood, x);
+                        break;
+                    }
+                case SimulationType.MonteCarlo:
+                    {
+                        matrix2.AddMCStep(matrix1, x);
+                        break;
+                    }
+            }
             CloneMatrix(matrix2, matrix1);
+        }
+
+        // Monte Carlo
+
+        public async Task GenerateMonteCarloArea(int number)
+        {
+           await Task.Run(() => this.matrix1.GenerateMonteCarloArea(number));
+
+           CloneMatrix(matrix1, matrix2);
         }
 
         private async Task CloneMatrix(Matrix source, Matrix target)
         {
             target.RestrictedIds = source.RestrictedIds;
+            target.IdsNumber = source.IdsNumber;
 
             Parallel.For(0, source.Width, i =>
             {
@@ -117,6 +138,5 @@ namespace Grains.Library.Processors
                 });
             });
         }
-
     }
 }

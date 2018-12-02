@@ -57,7 +57,7 @@ namespace Grains.Library.Extensions
             inclusionsHelper.AddInclusions(matrix, amount, size, type, borderCells);
         }
 
-        public static void AddStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy, int x = 100)
+        public static void AddCAStep(this Matrix matrix, Matrix referenceMatrix, Neighbourhood strategy, int x = 100)
         {
             NeighbourhoodCalculation neighbourAction = NeighbourhoodActions.MooreAction;
 
@@ -86,9 +86,9 @@ namespace Grains.Library.Extensions
                 Parallel.For(0, matrix.Height, (j) => {
                     if (!matrix.NotEmptyCells[i, j])
                     {
-                        neighbourAction(matrix,
-                                        referenceMatrix.Cells,
+                        neighbourAction(matrix, 
                                         new Cell(i, j),
+                                        referenceMatrix.Cells,
                                         strategy == Neighbourhood.ShapeControl ? random.Next(100) : 1,
                                         x);                       
                     }

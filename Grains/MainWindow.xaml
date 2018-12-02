@@ -6,8 +6,12 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:Grains"
         mc:Ignorable="d"
-        Title="Simple grains growth" Height="746.465" Width="797.527" Background="#FF9DA1F7">
+        Title="Simple grains growth" Height="746.465" Width="943.527" Background="#FF9DA1F7">
     <Grid Margin="0,0,-2,-3" RenderTransformOrigin="0.5,0.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="613*"/>
+            <ColumnDefinition Width="325*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RenderTransform>
             <TransformGroup>
                 <ScaleTransform/>
@@ -17,53 +21,62 @@
         </Grid.RenderTransform>
         <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="600" Margin="0,0,0,0" VerticalAlignment="Top" Width="600
                 " Background="#FFFFFFFF" MouseDown="canvas_MouseDown"/>
-        <Label Content="X"  HorizontalAlignment="Left" Margin="634,253,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="radioButton1" Content="Von Neumann" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,192,0,0" VerticalAlignment="Top" Checked="radioButton1_Checked"/>
-        <RadioButton x:Name="radioButton2" Content="Moore" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,212,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked" IsChecked="True"/>
-        <RadioButton x:Name="radioButton5" Content="Shape Control" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="634,233,0,0" VerticalAlignment="Top" Checked="radioButton5_Checked" IsChecked="False" Width="114"/>
-        <TextBox x:Name="randomTextBox" HorizontalAlignment="Left" Height="23" Margin="615,10,0,0" TextWrapping="Wrap" Text="50" VerticalAlignment="Top" Width="54"/>
-        <Button x:Name="randomButton" Content="Random" HorizontalAlignment="Left" Margin="684,9,0,0" VerticalAlignment="Top" Width="75" Click="randomButton_Click"/>
-        <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Left" Margin="684,39,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.336,0.54" Click="clearButton_Click"/>
-        <Button x:Name="stepButton" Content="Step" HorizontalAlignment="Left" Margin="615,72,0,0" VerticalAlignment="Top" Width="144" Height="22" Click="stepButton_Click"/>
-        <RadioButton x:Name="radioButton3" GroupName="Borders" Content="Fixed" HorizontalAlignment="Left" Margin="634,123,0,0" VerticalAlignment="Top" IsChecked="False" Checked="radioButton3_Checked"/>
-        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Periodic" HorizontalAlignment="Left" Margin="634,138,0,0" VerticalAlignment="Top" IsChecked="True" Checked="radioButton4_Checked"/>
+        <Label Content="X"  HorizontalAlignment="Left" Margin="21,253,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <RadioButton x:Name="radioButton1" Content="Von Neumann" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="21,192,0,0" VerticalAlignment="Top" Checked="radioButton1_Checked" Grid.Column="1"/>
+        <RadioButton x:Name="radioButton2" Content="Moore" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="21,212,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked" IsChecked="True" Grid.Column="1"/>
+        <RadioButton x:Name="radioButton5" Content="Shape Control" GroupName="Neighbourhood" HorizontalAlignment="Left" Margin="21,233,0,0" VerticalAlignment="Top" Checked="radioButton5_Checked" IsChecked="False" Width="114" Grid.Column="1"/>
+        <TextBox x:Name="randomTextBox" HorizontalAlignment="Left" Height="18" Margin="16,84,0,0" TextWrapping="Wrap" Text="50" VerticalAlignment="Top" Width="57" Grid.Column="1"/>
+        <Button x:Name="randomButton" Content="Random" HorizontalAlignment="Left" Margin="77,83,0,0" VerticalAlignment="Top" Width="69" Click="randomButton_Click" Grid.Column="1"/>
+        <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Left" Margin="83,23,0,0" VerticalAlignment="Top" Width="66" RenderTransformOrigin="-0.336,0.54" Click="clearButton_Click" Grid.Column="1" Height="18"/>
+        <Button x:Name="stepButton" Content="Step" HorizontalAlignment="Left" Margin="25,43,0,0" VerticalAlignment="Top" Width="124" Height="20" Click="stepButton_Click" Grid.Column="1"/>
+        <RadioButton x:Name="radioButton3" GroupName="Borders" Content="Fixed" HorizontalAlignment="Left" Margin="21,123,0,0" VerticalAlignment="Top" IsChecked="False" Checked="radioButton3_Checked" Grid.Column="1"/>
+        <RadioButton x:Name="radioButton4"  GroupName="Borders" Content="Periodic" HorizontalAlignment="Left" Margin="21,138,0,0" VerticalAlignment="Top" IsChecked="True" Checked="radioButton4_Checked" Grid.Column="1"/>
         <Button x:Name="importButton" Content="Import from text file" HorizontalAlignment="Left" Margin="10,621,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importButton_Click"/>
         <Button x:Name="exportButton" Content="Export to text file" HorizontalAlignment="Left" Margin="10,662,0,0" VerticalAlignment="Top" Width="131" Height="33" Click="exportButton_Click"/>
         <Button x:Name="importImageButton" Content="Import from image" HorizontalAlignment="Left" Margin="155,621,0,0" VerticalAlignment="Top" Width="131" RenderTransformOrigin="-0.132,0.957" Height="36" Click="importImageButton_Click"/>
         <Button x:Name="exportImageButton" Content="Export to image" HorizontalAlignment="Left" Margin="155,662,0,0" VerticalAlignment="Top" Width="131" Height="33" Click="exportImageButton_Click"/>
-        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="62" Margin="624,104,0,0" VerticalAlignment="Top" Width="135"/>
-        <GroupBox Header="Neighbourhood" HorizontalAlignment="Left" Height="123" Margin="624,167,0,0" VerticalAlignment="Top" Width="135">
+        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="62" Margin="11,104,0,0" VerticalAlignment="Top" Width="135" Grid.Column="1"/>
+        <GroupBox Header="Neighbourhood" HorizontalAlignment="Left" Height="123" Margin="11,167,0,0" VerticalAlignment="Top" Width="135" Grid.Column="1">
         </GroupBox>
-        <TextBox x:Name="xTextBox" HorizontalAlignment="Left" Height="23" Margin="666,253,0,0" TextWrapping="Wrap" Text="90" VerticalAlignment="Top" Width="63"/>
-        <GroupBox Header="Incusions" HorizontalAlignment="Left" Height="138" Margin="624,290,0,0" VerticalAlignment="Top" Width="135">
+        <TextBox x:Name="xTextBox" HorizontalAlignment="Left" Height="23" Margin="53,253,0,0" TextWrapping="Wrap" Text="90" VerticalAlignment="Top" Width="63" Grid.Column="1"/>
+        <GroupBox Header="Incusions" HorizontalAlignment="Left" Height="138" Margin="11,290,0,0" VerticalAlignment="Top" Width="135" Grid.Column="1">
         </GroupBox>
-        <Label Content="Amount" HorizontalAlignment="Left" Margin="634,313,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.737,1.462"/>
-        <Label Content="Size" HorizontalAlignment="Left" Margin="638,339,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="inclusionsButton" Content="Seed" HorizontalAlignment="Left" Margin="634,397,0,0" VerticalAlignment="Top" Width="114" Click="inclusionsButton_Click"/>
-        <TextBox x:Name="inclusionsSizeField" HorizontalAlignment="Left" Height="23" Margin="693,341,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="55"/>
-        <TextBox x:Name="incusionsNumberField" HorizontalAlignment="Left" Height="23" Margin="693,313,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="55"/>
-        <ComboBox x:Name="inclusionsComboBox" HorizontalAlignment="Left" Margin="634,370,0,0" VerticalAlignment="Top" Width="114"/>
+        <Label Content="Amount" HorizontalAlignment="Left" Margin="21,313,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.737,1.462" Grid.Column="1"/>
+        <Label Content="Size" HorizontalAlignment="Left" Margin="25,339,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <Button x:Name="inclusionsButton" Content="Seed" HorizontalAlignment="Left" Margin="21,397,0,0" VerticalAlignment="Top" Width="114" Click="inclusionsButton_Click" Grid.Column="1"/>
+        <TextBox x:Name="inclusionsSizeField" HorizontalAlignment="Left" Height="23" Margin="80,341,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="55" Grid.Column="1"/>
+        <TextBox x:Name="incusionsNumberField" HorizontalAlignment="Left" Height="23" Margin="80,313,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="55" Grid.Column="1"/>
+        <ComboBox x:Name="inclusionsComboBox" HorizontalAlignment="Left" Margin="21,370,0,0" VerticalAlignment="Top" Width="114" Grid.Column="1"/>
         <TextBox x:Name="coordinatesTextBox" HorizontalAlignment="Left" Height="23" Margin="511,610,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" IsEnabled="False"/>
-        <GroupBox x:Name="substructuresGroupBox" Header="Substructures" HorizontalAlignment="Left" Height="123" Margin="624,433,0,0" VerticalAlignment="Top" Width="135">
+        <GroupBox x:Name="substructuresGroupBox" Header="Substructures" HorizontalAlignment="Left" Height="123" Margin="11,433,0,0" VerticalAlignment="Top" Width="135" Grid.Column="1">
         </GroupBox>
-        <TextBox x:Name="substructuresTextBox" HorizontalAlignment="Left" Height="23" Margin="684,456,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="64"/>
-        <Label Content="Grains" HorizontalAlignment="Left" Margin="634,452,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="substructuresComboBox" HorizontalAlignment="Left" Margin="634,484,0,0" VerticalAlignment="Top" Width="114"/>
-        <Button x:Name="substructuresButton" Content="Substructure" Margin="634,511,44,175" Click="substructuresButton_Click" />
-        <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="615,38,0,0" VerticalAlignment="Top" Width="54" Height="21" Click="startButton_Click"/>
-        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="134" Margin="624,561,0,0" VerticalAlignment="Top" Width="135"/>
-        <TextBox x:Name="bordersTextBox" Height="23" Margin="0,610,44,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="39" RenderTransformOrigin="1.268,0.609"/>
-        <Button x:Name="createBordersButton" Content="Create" HorizontalAlignment="Left" Margin="634,585,0,0" VerticalAlignment="Top" Width="114" RenderTransformOrigin="0.5,0.5" Click="createBordersButton_Click">
+        <TextBox x:Name="substructuresTextBox" HorizontalAlignment="Left" Height="23" Margin="71,456,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="64" Grid.Column="1"/>
+        <Label Content="Grains" HorizontalAlignment="Left" Margin="21,452,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="substructuresComboBox" HorizontalAlignment="Left" Margin="21,484,0,0" VerticalAlignment="Top" Width="114" Grid.Column="1"/>
+        <Button x:Name="substructuresButton" Content="Substructure" Margin="21,511,215,175" Click="substructuresButton_Click" Grid.Column="1" />
+        <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="25,23,0,0" VerticalAlignment="Top" Width="54" Height="18" Click="startButton_Click" Grid.Column="1"/>
+        <GroupBox Header="Borders" HorizontalAlignment="Left" Height="134" Margin="11,561,0,0" VerticalAlignment="Top" Width="135" Grid.Column="1"/>
+        <TextBox x:Name="bordersTextBox" Height="23" Margin="0,610,193,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="39" RenderTransformOrigin="1.268,0.609" Grid.Column="1"/>
+        <Button x:Name="createBordersButton" Content="Create" HorizontalAlignment="Left" Margin="21,585,0,0" VerticalAlignment="Top" Width="114" RenderTransformOrigin="0.5,0.5" Click="createBordersButton_Click" Grid.Column="1">
 
         </Button>
-        <Label Content="Thickness" HorizontalAlignment="Left" Margin="639,610,0,0" VerticalAlignment="Top" RenderTransformOrigin="3.789,-0.538"/>
-        <CheckBox x:Name="bordersCheckbox" Content="Choose" HorizontalAlignment="Left" Margin="638,638,0,0" VerticalAlignment="Top" Width="109"/>
+        <Label Content="Thickness" HorizontalAlignment="Left" Margin="26,610,0,0" VerticalAlignment="Top" RenderTransformOrigin="3.789,-0.538" Grid.Column="1"/>
+        <CheckBox x:Name="bordersCheckbox" Content="Choose" HorizontalAlignment="Left" Margin="25,638,0,0" VerticalAlignment="Top" Width="109" Grid.Column="1"/>
         <StackPanel x:Name="loadingStackPanel" HorizontalAlignment="Left" Height="64" Margin="201,275,0,0" VerticalAlignment="Top" Width="188" Background="White" Visibility="Collapsed">
             <Label x:Name="loadingLabel" Content="Processing" FontSize="36" Height="65" Margin="0,0,10,0"/>
         </StackPanel>
-        <Button x:Name="clearBackgroundButton" Content="Clear Background" HorizontalAlignment="Left" Margin="638,662,0,0" VerticalAlignment="Top" Width="109" Click="clearBackgroundButton_Click"/>
-            
+        <Button x:Name="clearBackgroundButton" Content="Clear Background" HorizontalAlignment="Left" Margin="25,662,0,0" VerticalAlignment="Top" Width="109" Click="clearBackgroundButton_Click" Grid.Column="1"/>
+
         <Label x:Name="percentLabel" Content="% of GB" HorizontalAlignment="Left" Margin="454,634,0,0" VerticalAlignment="Top"/>
         <Label x:Name="percentageLabel" Content="" HorizontalAlignment="Left" Margin="550,635,0,0" VerticalAlignment="Top"/>
+        <GroupBox x:Name="mcGroupBox" Header="Monte Carlo" HorizontalAlignment="Left" Height="156" Margin="157,112,0,0" VerticalAlignment="Top" Width="158" Grid.Column="1"/>
+        <Button x:Name="mcGenerationButton" Content="Generate MC" HorizontalAlignment="Left" Margin="167,164,0,0" VerticalAlignment="Top" Width="138" Click="McGenerationButton_Click" Grid.Column="1"/>
+        <TextBox x:Name="mcStatesTextBox" HorizontalAlignment="Left" Height="23" Margin="256,134,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="49" Grid.Column="1"/>
+        <Label x:Name="mcStatesLabel" Content="States number" HorizontalAlignment="Left" Margin="165,133,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <GroupBox x:Name="simulationGroupBox" Header="Simulation" HorizontalAlignment="Left" Height="76" Margin="16,3,0,0" VerticalAlignment="Top" Width="304" Grid.Column="1"/>
+        <RadioButton x:Name="simMCRadioButton" GroupName="Simulation" Content="MonteCarlo" HorizontalAlignment="Left" Height="13" Margin="157,43,0,0" VerticalAlignment="Top" Grid.Column="1" IsChecked="True" Checked="SimMCRadioButton_Checked"/>
+        <RadioButton x:Name="simCARadioButton" GroupName="Simulation" Content="CellularAutomata" HorizontalAlignment="Left" Height="17" Margin="157,24,0,0" VerticalAlignment="Top" Grid.Column="1" Checked="SimCARadioButton_Checked"/>
+        <TextBox x:Name="jgbTextBox" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="256,189,0,0" TextWrapping="Wrap" Text="0.1" VerticalAlignment="Top" Width="49" TextChanged="JgbTextBox_TextChanged"/>
+        <Label x:Name="jgbLabel" Content="Jgb &lt;0.1 - 1&gt;" Grid.Column="1" HorizontalAlignment="Left" Margin="167,186,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.026,0" Width="84"/>
     </Grid>
 </Window>
