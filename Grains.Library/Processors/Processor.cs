@@ -108,7 +108,7 @@ namespace Grains.Library.Processors
                     }
                 case SimulationType.MonteCarlo:
                     {
-                        matrix2.AddMCStep(matrix1, x);
+                        matrix2.AddMCStep(j);
                         break;
                     }
             }

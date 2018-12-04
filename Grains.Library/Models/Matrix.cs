@@ -15,8 +15,10 @@ namespace Grains.Library.Models
         public BorderStyle Border { get; set; }
         public int IdsNumber { get; set; }
         public List<int> RestrictedIds { get; set; }
+        public List<Cell> CellsWOId { get; set; }
 
-        public List<Cell> CellsList {
+        public List<Cell> CellsList
+        {
             get
             {
                 var cellsList = new List<Cell>();
@@ -46,6 +48,15 @@ namespace Grains.Library.Models
 
             this.NotEmptyCells = new bool[width, heigth];
             this.RestrictedIds = new List<int>();
+
+            this.CellsWOId = new List<Cell>();
+            for (int i = 0; i < Width; i++)
+            {
+                for (int j = 0; j < Height; j++)
+                {
+                    this.CellsWOId.Add(new Cell(i, j, Cells[i, j]));
+                }
+            }
         }
 
         public void Add(Cell cell)

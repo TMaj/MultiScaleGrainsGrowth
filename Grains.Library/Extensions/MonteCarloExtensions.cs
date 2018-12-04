@@ -25,41 +25,71 @@ namespace Grains.Library.Extensions
             matrix.IdsNumber = number;
         }
 
-        public static void AddMCStep(this Matrix matrix, Matrix referenceMatrix, double jb)
+        public static void AddMCStep(this Matrix matrix, double jb)
         {
-            var notVisitedCells = new List<Cell>(matrix.CellsList);
-
             var random = new Random();
+            var notVisitedCells = new List<Cell>(matrix.CellsWOId);
+            notVisitedCells.Shuffle(random);
 
-            Parallel.For(0, matrix.Width, (i) => {
-                Parallel.For(0, matrix.Height, (j) => {
-                    var currentCell = new Cell(i, j, referenceMatrix.Cells[i, j]);
+            foreach (var currentCell in notVisitedCells)
+            {
+                currentCell.Id = matrix.Cells[currentCell.X, currentCell.Y];
 
-                    var currentEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+                var currentEnergy = matrix.CalculateEnergy(currentCell, jb);
 
-                    if (currentEnergy == 0)
-                    {
-                        return;
-                    }
+                if (currentEnergy == 0)
+                {
+                    continue;
+                }
 
-                    var currentCellValue = currentCell.Id;
-                    var tempCellValue = random.Next(referenceMatrix.IdsNumber) + 2;
+                var currentCellValue = currentCell.Id;
+                var tempCellValue = random.Next(matrix.IdsNumber) + 2;
 
-                    if (tempCellValue == currentCellValue)
-                    {
-                        return;
-                    }
+                if (tempCellValue == currentCellValue)
+                {
+                    continue;
+                }
 
-                    currentCell.Id = tempCellValue;
+                currentCell.Id = tempCellValue;
 
-                    var newEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+                var newEnergy = matrix.CalculateEnergy(currentCell, jb);
 
-                    if (newEnergy < currentEnergy)
-                    {
-                        matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
-                    }
-                });
-            });
+                if (newEnergy < currentEnergy)
+                {
+                    matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
+                }
+            }
+
+
+            //Parallel.For(0, matrix.Width, (i) => {
+            //    Parallel.For(0, matrix.Height, (j) => {
+            //        var currentCell = new Cell(i, j, referenceMatrix.Cells[i, j]);
+
+            //        var currentEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+
+            //        if (currentEnergy == 0)
+            //        {
+            //            return;
+            //        }
+
+            //        var currentCellValue = currentCell.Id;
+            //        var tempCellValue = random.Next(referenceMatrix.IdsNumber) + 2;
+
+            //        if (tempCellValue == currentCellValue)
+            //        {
+            //            return;
+            //        }
+
+            //        currentCell.Id = tempCellValue;
+
+            //        var newEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+
+            //        if (newEnergy < currentEnergy)
+            //        {
+            //            matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
+            //        }
+            //    });
+            //});
         }
 
         private static int CalculateEnergy(this Matrix matrix, Cell cell, double j)
