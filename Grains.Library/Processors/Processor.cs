@@ -1,7 +1,6 @@
 ﻿using Grains.Library.Enums;
 using Grains.Library.Extensions;
 using Grains.Library.Models;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Grains.Library.Processors
@@ -14,13 +13,27 @@ namespace Grains.Library.Processors
         private int width;
         private int height;
 
+        public int CurrentRXStep = 0;
+        public bool EnergyDistributed;
+        public bool Recrystalisation;
+
         public int IdsNumber => this.matrix1.Cells.Max();
 
         public int[,] Array => matrix1.Cells;
+        public int[,] Energy => matrix1.Energy;
 
         public Neighbourhood Neighbourhood { get; set; }
 
+        // Recrystalisation
         public SimulationType SimulationType { get; set; }
+        public NucleationModuleType NucleationType { get; set; }
+        public NucleationArea NucleationArea { get; set; }
+        public int NucleationSize { get; set; }
+        public int StepsLimit { get; set; }
+
+
+        public delegate void StepIncrementedDelegate(int stepnumber);
+        public event StepIncrementedDelegate StepIncremented;
 
         public Processor(int width, int height)
         {
@@ -36,31 +49,31 @@ namespace Grains.Library.Processors
         public async Task AddRandomGrains(int amount)
         {
             await Task.Run(() => matrix1.AddRandomGrains(amount));
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public async Task AddInclusions(int amount, int size, Inclusions type)
         {
             await Task.Run(() => matrix1.AddInclusions(amount, size, type));
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public async Task AddBorders(int size)
         {
             await Task.Run(() => matrix1.AddBorders(size));
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public async Task AddSingleBorder(int size, int x, int y)
         {
             await Task.Run(() => matrix1.AddSingleBorder(size, x, y));
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public async Task ClearAllButBorders()
         {
             await Task.Run(() => matrix1.ClearAllButBorders());
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public async Task<double> GetBordersPercentage()
@@ -78,6 +91,8 @@ namespace Grains.Library.Processors
 
         public async Task Clear()
         {
+            this.CurrentRXStep = 0;
+
             await Task.Run(() =>
             {
                 matrix1 = new Matrix(width, height);
@@ -94,7 +109,7 @@ namespace Grains.Library.Processors
         public async Task CreateSubstructure(Substructures substructure, int grains)
         {
             await Task.Run(()=>this.matrix1.CreateSubstructure(substructure, grains));
-            await CloneMatrix(matrix1, matrix2);
+            CloneMatrix(matrix1, matrix2);
         }
 
         public void MakeStep(int x, double j)
@@ -111,6 +126,13 @@ namespace Grains.Library.Processors
                         matrix2.AddMCStep(j);
                         break;
                     }
+                case SimulationType.RXMonteCarlo:
+                    {
+                        matrix2.AddRXMCStep(j, NucleationType, NucleationArea, NucleationSize, CurrentRXStep);
+                        CurrentRXStep++;
+                        StepIncremented(CurrentRXStep);
+                        break;
+                    }
             }
             CloneMatrix(matrix2, matrix1);
         }
@@ -124,16 +146,36 @@ namespace Grains.Library.Processors
            CloneMatrix(matrix1, matrix2);
         }
 
-        private async Task CloneMatrix(Matrix source, Matrix target)
+        public async Task DistributeEnergy(EnergyDistributionType energyDistributionType)
+        {
+            await Task.Run(() => this.matrix1.DistributeEnergy(energyDistributionType));
+            EnergyDistributed = true;
+            CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task ClearEnergy()
+        {
+            await Task.Run(() => this.matrix1.ClearEnergy());            
+            CloneMatrix(matrix1, matrix2);
+        }
+
+        public async Task AddRecrystalisedNucleons()
+        {
+            await Task.Run(() => this.matrix1.AddRecrystalisedNucleons(NucleationSize, NucleationArea));
+            CloneMatrix(matrix1, matrix2);
+        }
+
+        private void CloneMatrix(Matrix source, Matrix target)
         {
             target.RestrictedIds = source.RestrictedIds;
-            target.IdsNumber = source.IdsNumber;
+          //  target.IdsNumber = source.IdsNumber;
 
             Parallel.For(0, source.Width, i =>
             {
                 Parallel.For(0, source.Height, j =>
                 {
                     target.Cells[i, j] = source.Cells[i, j];
+                    target.Energy[i, j] = source.Energy[i, j];
                     target.NotEmptyCells[i, j] = source.NotEmptyCells[i, j];
                 });
             });

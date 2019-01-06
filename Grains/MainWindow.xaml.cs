@@ -28,6 +28,9 @@ namespace Grains
         private Color[] colorsArray;
         private int xDimension;
         private int yDimension;
+        private int matrixIdsNumber;
+        private bool microstructureDisplayed;
+        private SimulationType currentChosenSimulation = SimulationType.CellularAutomata;
 
         private readonly BackgroundWorker backgroundWorker;
         private readonly BackgroundWorker clearingBackgroundWorker;
@@ -37,9 +40,11 @@ namespace Grains
         {
             xDimension = 300;
             yDimension = 300;
+            microstructureDisplayed = true;
 
             array = new Rectangle[xDimension, yDimension];
             processor = new Processor(xDimension, yDimension);
+            matrixIdsNumber = processor.IdsNumber;
             colorsArray = new Color[0];
             backgroundWorker = new BackgroundWorker();
             clearingBackgroundWorker = new BackgroundWorker();
@@ -52,6 +57,8 @@ namespace Grains
             backgroundWorker.RunWorkerCompleted += worker_RunWorkerCompleted;
 
             clearingBackgroundWorker.DoWork += clearingbackgroundWorker_DoWork;
+
+            processor.StepIncremented += UpdateCurrentRXStep;
 
             InitializeComponent();
             InitializeRectanglesOnCanvas(xDimension, yDimension);
@@ -90,18 +97,27 @@ namespace Grains
             }
         }
 
-        private Color GetRandomColor(Random random)
+        private Color GetRandomColor(Random random, bool redColor = false)
         {
             var color = new Color();
             color.R = (byte)random.Next(0, 255);
-            color.G = (byte)random.Next(0, 255);
-            color.B = (byte)random.Next(0, 255);
             color.A = 255;
 
+            if (redColor)
+            {
+                color.G = 0;
+                color.B = 0;
+            }
+            else
+            {
+                color.G = (byte)random.Next(0, 255);
+                color.B = (byte)random.Next(0, 255);
+            }
+                     
             return color;
         }
 
-        private void InitializeColorsArray(int value)
+        private void InitializeColorsArray(int value, bool oneColorType = false)
         {
             var rand = new Random();
 
@@ -114,39 +130,18 @@ namespace Grains
 
                 var oldColors = colorsArray;
 
-              //  if (oldColors.Count() > value + 2)
-             //   {
-                    colorsArray = new Color[oldColors.Count() + value];
+                colorsArray = new Color[oldColors.Count() + value];
 
-                    for (int i = oldColors.Count(); i < oldColors.Count() + value; i++)
-                    {
-                        colorsArray[i] = GetRandomColor(rand);
-                    }
-             //   }
-                //else
-                //{
-                    
-                //}
-                
-                //colorsArray = new Color[value + 2];
+                for (int i = 0; i < oldColors.Count(); i++)
+                {
+                    colorsArray[i] = oldColors[i];
+                }
 
-                //var border = oldColors.Count() > colorsArray.Count() ? colorsArray.Count() : oldColors.Count();
-                //for (int i = 0; i < border; i++)
-                //{
-                //    colorsArray[i] = oldColors[i];
-                //}
-
-               
-
-                //for (int i = border; i < value + 2; i++)
-                //{
-                //    var color = new Color();
-                //    color.R = (byte)rand.Next(0, 255);
-                //    color.G = (byte)rand.Next(0, 255);
-                //    color.B = (byte)rand.Next(0, 255);
-                //    color.A = 255;
-                //    colorsArray[i] = color;
-                //}
+                for (int i = oldColors.Count(); i < oldColors.Count() + value; i++)
+                {
+                   colorsArray[i] = GetRandomColor(rand, oneColorType);
+                }
+         
             }
             else
             {
@@ -156,7 +151,7 @@ namespace Grains
 
                 for (int i = 2; i < value + 2; i++)
                 {
-                    colorsArray[i] = GetRandomColor(rand);
+                    colorsArray[i] = GetRandomColor(rand, oneColorType);
                 }
             }
         }
@@ -203,6 +198,22 @@ namespace Grains
             }
         }
 
+        private void DisplayEnergyArray()
+        {
+            for (int i = 0; i < xDimension; i++)
+            {
+                for (int j = 0; j < yDimension; j++)
+                {
+                    var color = new Color();
+                    color.R = (byte)(255 / (processor.Energy[i, j] +1));
+                    color.G = (byte)(255 / (processor.Energy[i, j] +1));
+                    color.B = (byte)(255 / (processor.Energy[i, j] + 1));
+                    color.A = 255;
+                    array[i, j].Fill = new SolidColorBrush(color);
+                }
+            }
+        }
+
         private void ClearArray()
         {
             for (int i = 0; i < xDimension; i++)
@@ -235,10 +246,13 @@ namespace Grains
         {
             int x = 90;
             double j = 0.1;
+            matrixIdsNumber = processor.IdsNumber;
+
             xTextBox.Dispatcher.Invoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate { x = Convert.ToInt32(this.xTextBox.Text); });
             jgbTextBox.Dispatcher.Invoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate { j = double.Parse(jgbTextBox.Text, System.Globalization.CultureInfo.InvariantCulture); });
+
             processor.MakeStep(x, j);
         }
 
@@ -247,6 +261,8 @@ namespace Grains
             await processor.Clear();
             await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
+                this.colorsArray = new Color[0];
+                InitializeColorsArray(0);
                 ClearArray();
             }));
 
@@ -255,6 +271,11 @@ namespace Grains
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (matrixIdsNumber < processor.IdsNumber)
+            {
+                InitializeColorsArray(processor.IdsNumber - matrixIdsNumber, true);
+                matrixIdsNumber = processor.IdsNumber;
+            }
             RefreshFullArray();
         }
 
@@ -287,6 +308,8 @@ namespace Grains
         {
             if (!clearingBackgroundWorker.IsBusy)
             {
+                currentRXStepTextBlock.Text = "0";
+                energyDistributionCheckBox.IsChecked = false;
                 clearingBackgroundWorker.RunWorkerAsync();
                 loadingStackPanel.Visibility = Visibility.Visible;
             }
@@ -400,16 +423,26 @@ namespace Grains
             {
                 startButton.Content = "Start";
                 dispatcherTimer.Stop();
+                rxButton.IsEnabled = true;
             }
             else
             {
                 startButton.Content = "Stop";
                 dispatcherTimer.Start();
+                rxButton.IsEnabled = false;
             }
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
+            if (processor.SimulationType == SimulationType.RXMonteCarlo && (bool)stepsLimitCheckBox.IsChecked && processor.CurrentRXStep >= processor.StepsLimit)
+            {
+                processor.SimulationType = currentChosenSimulation;
+                startButton.IsEnabled = true;
+                rxButton.Content = "Start RX";
+                dispatcherTimer.Stop();
+            }
+
             if (!backgroundWorker.IsBusy)
             {
                 backgroundWorker.RunWorkerAsync();
@@ -469,11 +502,13 @@ namespace Grains
         private void SimCARadioButton_Checked(object sender, RoutedEventArgs e)
         {
             this.processor.SimulationType = SimulationType.CellularAutomata;
+            currentChosenSimulation = SimulationType.CellularAutomata;
         }
 
         private void SimMCRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             this.processor.SimulationType = SimulationType.MonteCarlo;
+            currentChosenSimulation = SimulationType.MonteCarlo;
         }
 
         private void JgbTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -487,6 +522,142 @@ namespace Grains
             {
                 jgbTextBox.Text = "1";
             }
+        }
+
+        private async void DistributeEnergButton_Click(object sender, RoutedEventArgs e)
+        {
+            EnergyDistributionType energyDistributionType;
+            if ((bool)heterogenousRadioButton.IsChecked)
+            {
+                energyDistributionType = EnergyDistributionType.Heterogenous;
+            }
+            else
+            {
+                energyDistributionType = EnergyDistributionType.Homogenous;
+            }
+            await RunLongTask(this.processor.DistributeEnergy(energyDistributionType), () => {
+                if (!microstructureDisplayed)
+                {
+                    DisplayEnergyArray();                   
+                }
+                energyDistributionCheckBox.IsChecked = true;
+            });
+        }
+
+        private void ShowEnergyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (microstructureDisplayed)
+            {
+                    DisplayEnergyArray();
+                    this.showEnergyButton.Content = "Show microstructure";
+                    lowLabel.Visibility = Visibility.Visible;
+                    highLabel.Visibility = Visibility.Visible;
+                    legendRectangle.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                RefreshFullArray();
+                this.showEnergyButton.Content = "Show energy";
+                lowLabel.Visibility = Visibility.Hidden;
+                highLabel.Visibility = Visibility.Hidden;
+                legendRectangle.Visibility = Visibility.Hidden;
+            }
+
+            microstructureDisplayed = !microstructureDisplayed;
+        }
+
+        private void UpdateCurrentRXStep(int stepNumber)
+        {
+           Dispatcher.Invoke((Action)(() => { this.currentRXStepTextBlock.Text = stepNumber.ToString(); }));
+        }
+
+        private async void ClearEnergyButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RunLongTask(processor.ClearEnergy(), () => {
+                if (!microstructureDisplayed)
+                {
+                    DisplayEnergyArray();
+                }
+                energyDistributionCheckBox.IsChecked = false;
+            });
+        }
+
+        private void RxButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (dispatcherTimer.IsEnabled)
+            {
+                processor.SimulationType = currentChosenSimulation;
+                startButton.IsEnabled = true;
+                rxButton.Content = "Start RX";
+                dispatcherTimer.Stop();
+            }
+            else
+            {
+                processor.SimulationType = SimulationType.RXMonteCarlo;
+                startButton.IsEnabled = false;
+                rxButton.Content = "Stop RX";
+                dispatcherTimer.Start();
+            }
+        }
+
+        private void ConstantRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.NucleationType = NucleationModuleType.Constant;
+            processor.NucleationSize = Convert.ToInt32(this.rxConstantNucleonsTextBox.Text);
+            rxNucleonsButton.IsEnabled = false;
+        }
+
+        private void IncreasingRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.NucleationType = NucleationModuleType.Increasing;
+            processor.NucleationSize = Convert.ToInt32(this.rxIncreasingNucleonsTextBox.Text);
+            rxNucleonsButton.IsEnabled = false;
+        }
+
+        private void BeginningConstRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.NucleationType = NucleationModuleType.BeginningConstant;
+            processor.NucleationSize = Convert.ToInt32(this.rxBeginningIncreasingNucleonsTextBox.Text);
+            rxNucleonsButton.IsEnabled = true;
+        }
+
+        private void RxNucleonsGBradioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.NucleationArea = NucleationArea.GrainBoundaries;
+        }
+
+        private void RxNucleonsRandomradioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            processor.NucleationArea = NucleationArea.Random;
+        }
+
+        private void StepsLimitTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            processor.StepsLimit = Convert.ToInt32(this.stepsLimitTextBox.Text);
+        }
+
+        private async void RxNucleonsButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RunLongTask(this.processor.AddRecrystalisedNucleons(), () => {
+                InitializeColorsArray(processor.NucleationSize, true);
+                RefreshFullArray();
+            });
+        }
+
+        private void RxBeginningIncreasingNucleonsTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            processor.NucleationSize = Convert.ToInt32(this.rxBeginningIncreasingNucleonsTextBox.Text);
+        }
+
+        private void EnergyDistributionCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            rxButton.IsEnabled = true;
+        }
+
+        private void EnergyDistributionCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            rxButton.IsEnabled = false;
         }
     }
 }

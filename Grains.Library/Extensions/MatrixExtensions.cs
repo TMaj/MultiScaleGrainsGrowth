@@ -1,13 +1,11 @@
-﻿using Grains.Library.Enums;
+﻿using Grains.Library.Actions;
+using Grains.Library.Enums;
+using Grains.Library.Extensions.Helpers;
 using Grains.Library.Models;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
-using Grains.Library.Actions;
-using System.Collections.Concurrent;
-using Grains.Library.Extensions.Helpers;
 
 namespace Grains.Library.Extensions
 {
@@ -266,6 +264,82 @@ namespace Grains.Library.Extensions
             double percentage = ((double)bordersNumber /(double)(matrix.Width * matrix.Height)) * 100;
 
             return percentage;
+        }
+
+        public static void DistributeEnergy(this Matrix matrix, EnergyDistributionType energyDistributionType)
+        {
+            switch (energyDistributionType)
+            {
+                case EnergyDistributionType.Homogenous:
+                    {
+                        for (int i =0; i< matrix.Width; i++)
+                        {
+                            for (int j = 0; j < matrix.Height; j++)
+                            {
+                                matrix.Energy[i, j] = 5;
+                            }
+                        }
+
+                        break;
+                    }
+                case EnergyDistributionType.Heterogenous:
+                    {
+                        var borderCellsHelper = new BorderCellsHelpers();
+                        var borderCells = borderCellsHelper.GetBorderCells(matrix);
+
+                        Parallel.ForEach(borderCells, (cell) => { matrix.Energy[cell.X, cell.Y] = 7; });
+                        Parallel.ForEach(matrix.CellsWOId, (cell) => {
+                            if (matrix.Energy[cell.X, cell.Y] != 7)
+                            {
+                                matrix.Energy[cell.X, cell.Y] = 2;
+                            }
+                        });
+                        
+                        break;
+                    }
+            }
+        }
+
+        public static void ClearEnergy(this Matrix matrix)
+        {
+            matrix.Energy = new int[matrix.Width, matrix.Height];
+        }
+
+        public static void AddRecrystalisedNucleons(this Matrix matrix, int amount, NucleationArea areaType)
+        {
+            IList<Cell> cells = new List<Cell>();
+
+            switch (areaType)
+            {
+                case NucleationArea.GrainBoundaries:
+                    {
+                        cells = matrix.ShuffledBorderCells;
+                        break;
+                    }
+
+                case NucleationArea.Random:
+                    {
+                        cells = matrix.ShuffledCells;
+                        break;
+                    }
+            }
+
+            var newIdBase = matrix.IdsNumber;
+
+            cells = cells.Where(cell => matrix.Energy[cell.X, cell.Y] != 0).ToList();
+
+            if (cells.Count == 0 || amount > cells.Count)
+            {
+                return;
+            }
+
+            for (int i = 0; i < amount; i++)
+            {
+                var cell = cells.ElementAt(i);
+
+                matrix.Cells[cell.X, cell.Y] = newIdBase + i + 1;
+                matrix.Energy[cell.X, cell.Y] = 0;
+            }
         }
     }
 }

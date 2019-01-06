@@ -1,7 +1,8 @@
-﻿using Grains.Library.Models;
+﻿using Grains.Library.Enums;
+using Grains.Library.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Grains.Library.Extensions
 {
@@ -22,7 +23,7 @@ namespace Grains.Library.Extensions
                 }
             }
 
-            matrix.IdsNumber = number;
+           // matrix.IdsNumber = number;
         }
 
         public static void AddMCStep(this Matrix matrix, double jb)
@@ -59,37 +60,64 @@ namespace Grains.Library.Extensions
                     matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
                 }
             }
+        }
 
+        public static void AddRXMCStep(this Matrix matrix, double jb, NucleationModuleType nucleationType, NucleationArea nucleationArea, int nucleationSize, int currentStep)
+        {
+            switch (nucleationType)
+            {
+                case NucleationModuleType.Constant:
+                    {
+                        matrix.AddRecrystalisedNucleons(nucleationSize, nucleationArea);
+                        break;
+                    }
+                case NucleationModuleType.Increasing:
+                    {
+                        matrix.AddRecrystalisedNucleons(nucleationSize * currentStep, nucleationArea);
+                        break;
+                    }
+            }
 
-            //Parallel.For(0, matrix.Width, (i) => {
-            //    Parallel.For(0, matrix.Height, (j) => {
-            //        var currentCell = new Cell(i, j, referenceMatrix.Cells[i, j]);
+            var random = new Random();
+            var notVisitedCells = new List<Cell>(matrix.ShuffledCells);
+          
+            foreach (var currentCell in notVisitedCells)
+            {
+                currentCell.Id = matrix.Cells[currentCell.X, currentCell.Y];
 
-            //        var currentEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+                var randomNeighbour = matrix.GetRandomNeighbour(currentCell, random);
 
-            //        if (currentEnergy == 0)
-            //        {
-            //            return;
-            //        }
+                if (matrix.Energy[randomNeighbour.X, randomNeighbour.Y] != 0)
+                {
+                    continue;
+                }
 
-            //        var currentCellValue = currentCell.Id;
-            //        var tempCellValue = random.Next(referenceMatrix.IdsNumber) + 2;
+                var currentEnergy = matrix.CalculateEnergy(currentCell, jb) + matrix.Energy[currentCell.X, currentCell.Y];
 
-            //        if (tempCellValue == currentCellValue)
-            //        {
-            //            return;
-            //        }
+                if (currentEnergy == 0)
+                {
+                    continue;
+                }
 
-            //        currentCell.Id = tempCellValue;
+                var currentCellValue = currentCell.Id;
 
-            //        var newEnergy = referenceMatrix.CalculateEnergy(currentCell, j);
+                var tempCellValue = matrix.Cells[randomNeighbour.X, randomNeighbour.Y];
 
-            //        if (newEnergy < currentEnergy)
-            //        {
-            //            matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
-            //        }
-            //    });
-            //});
+                if (tempCellValue == currentCellValue)
+                {
+                    continue;
+                }
+
+                currentCell.Id = tempCellValue;
+
+                var newEnergy = matrix.CalculateEnergy(currentCell, jb);
+
+                if (newEnergy < currentEnergy)
+                {
+                    matrix.Cells[currentCell.X, currentCell.Y] = tempCellValue;
+                    matrix.Energy[currentCell.X, currentCell.Y] = 0;
+                }
+            }
         }
 
         private static int CalculateEnergy(this Matrix matrix, Cell cell, double j)
@@ -108,6 +136,20 @@ namespace Grains.Library.Extensions
             }
 
             return kroeneckerDelta; // * j;
+        }
+
+        private static Cell GetRandomNeighbour(this Matrix matrix, Cell cell, Random random)
+        {
+            var coordinates = Coordinates.Coordinates.MooreCoordinates;
+            var neighbours = new List<Cell>();
+
+            foreach (var point in coordinates)
+            {
+                var tempCell = cell.Get(point.X, point.Y).NormalizeCell(matrix);
+                neighbours.Add(tempCell);
+            }
+
+            return neighbours.ElementAt(random.Next(neighbours.Count));
         }
     }
 }
