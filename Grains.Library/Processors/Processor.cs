@@ -134,6 +134,7 @@ namespace Grains.Library.Processors
                         break;
                     }
             }
+            matrix2.IdsNumber = matrix2.Cells.Max() - 2;
             CloneMatrix(matrix2, matrix1);
         }
 
@@ -168,12 +169,13 @@ namespace Grains.Library.Processors
         private void CloneMatrix(Matrix source, Matrix target)
         {
             target.RestrictedIds = source.RestrictedIds;
-          //  target.IdsNumber = source.IdsNumber;
+            target.IdsNumber = source.IdsNumber;
 
             Parallel.For(0, source.Width, i =>
             {
                 Parallel.For(0, source.Height, j =>
                 {
+                   
                     target.Cells[i, j] = source.Cells[i, j];
                     target.Energy[i, j] = source.Energy[i, j];
                     target.NotEmptyCells[i, j] = source.NotEmptyCells[i, j];

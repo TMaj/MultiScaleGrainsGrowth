@@ -14,10 +14,7 @@ namespace Grains.Library.Models
         public BorderStyle Border { get; set; }
         public int IdsNumber
         {
-            get
-            {
-                return Cells.Max();
-            }
+            get; set;
         }
         public List<int> RestrictedIds { get; set; }
         public List<Cell> CellsWOId { get; set; }

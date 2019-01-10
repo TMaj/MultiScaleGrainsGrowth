@@ -23,7 +23,7 @@ namespace Grains.Library.Extensions
                 }
             }
 
-           // matrix.IdsNumber = number;
+            matrix.IdsNumber = number;
         }
 
         public static void AddMCStep(this Matrix matrix, double jb)

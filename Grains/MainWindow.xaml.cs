@@ -137,7 +137,7 @@ namespace Grains
                     colorsArray[i] = oldColors[i];
                 }
 
-                for (int i = oldColors.Count(); i < oldColors.Count() + value; i++)
+                for (int i = oldColors.Count() - 1; i < oldColors.Count() + value; i++)
                 {
                    colorsArray[i] = GetRandomColor(rand, oneColorType);
                 }
